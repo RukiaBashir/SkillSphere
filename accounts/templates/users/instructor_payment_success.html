@@ -1,0 +1,11 @@
+{% extends "user_base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+  <h2 class="mb-4">Payment Successful</h2>
+  <p>Your payment has been processed successfully and your instructor account is now active!</p>
+  <a href="{% url 'payments:cart-list' %}" class="btn btn-primary">Add to Cart</a>
+</div>
+{% endblock %}

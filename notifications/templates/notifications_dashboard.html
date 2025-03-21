@@ -1,0 +1,38 @@
+{% extends "noti_base.html" %}
+{% load static %}
+{% load l10n %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>
+      {% if user_role == 'instructor' %}
+        Instructor Notifications
+      {% elif user_role == 'learner' %}
+        Learner Notifications
+      {% else %}
+        Your Notifications
+      {% endif %}
+    </h2>
+    
+    {% if notifications %}
+    <ul class="list-group mt-3">
+      {% for notification in notifications %}
+      <li class="list-group-item d-flex justify-content-between align-items-center {% if not notification.read %}list-group-item-warning{% endif %}">
+          <div>
+              {{ notification.message }}
+              <br>
+              <small class="text-muted">{{ notification.created_at|date:"M d, Y H:i" }}</small>
+          </div>
+          {% if not notification.read %}
+          <span class="badge bg-danger">New</span>
+          {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+      <div class="alert alert-info mt-3" role="alert">
+          You have no notifications.
+      </div>
+    {% endif %}
+</div>
+{% endblock %}

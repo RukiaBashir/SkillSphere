@@ -1,0 +1,112 @@
+/* ================= Registration Page Styles ================= */
+
+/* Optional: Wrap registration content if needed */
+/* You can add the "registration-content" class to a container if desired */
+.registration-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  text-align: center;
+}
+
+/* Use container adjustments if needed */
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* Navbar styling (if used on this page) */
+.navbar {
+  width: 100%;
+  background-color: transparent !important;
+  transition: background-color 0.3s ease-in-out;
+}
+
+/* Center row contents */
+.row {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+/* Form input styling */
+input,
+select {
+  border-radius: 30px;
+  padding: 10px;
+  width: 100%;
+  margin-bottom: 20px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ddd;
+}
+
+/* Button styling */
+button {
+  background-color: #6200EE;
+  border: none;
+  color: white;
+  padding: 12px;
+  border-radius: 30px;
+  width: 100%;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #4d00ba;
+}
+
+/* Heading styling */
+h1 {
+  color: #6200EE;
+  font-size: 2.5rem;
+  margin-bottom: 30px;
+}
+
+/* Fieldset styling for registration sections */
+fieldset {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+legend {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+/* Logo glow effect */
+.logo-glow {
+  box-shadow: 0 0 10px 3px rgba(255, 255, 255, 0.8);
+  transition: box-shadow 0.3s ease;
+  filter: drop-shadow(0px 0px 10px rgba(255, 255, 255, 0.8));
+  padding-top: 50px;
+}
+
+.logo-glow:hover {
+  box-shadow: 0 0 20px 5px rgba(255, 255, 255, 1);
+}
+
+/* Navbar nav link hover effect */
+.navbar-nav .nav-link:hover {
+  color: orange;
+  transition: color 0.3s ease;
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+  .container {
+    padding: 0 20px;
+  }
+}
+
+@media (max-width: 1080px) {
+  h1 {
+    font-size: 2rem;
+  }
+}
+

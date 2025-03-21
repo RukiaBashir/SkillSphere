@@ -1,0 +1,14 @@
+{% extends "user_base.html" %}
+
+{% block content %}
+<div class="container my-5">
+  <h2>Become an Instructor</h2>
+  <p>Please confirm that you wish to become an instructor and pay the registration fee.</p>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">Confirm and Proceed to Payment</button>
+  </form>
+  <a href="{% url 'accounts:learner-dashboard' %}" class="btn btn-link mt-3">Back to Dashboard</a>
+</div>
+{% endblock %}

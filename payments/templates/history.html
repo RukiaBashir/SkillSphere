@@ -1,0 +1,159 @@
+{% extends "classes_base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load l10n %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container my-5">
+  <!-- Available Classes Section -->
+  <h2 class="mb-4">Available Classes</h2>
+  <div class="row">
+    {% for class_obj in classes %}
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+          {% if class_obj.image %}
+            <img src="{{ class_obj.image.url }}" class="card-img-top" alt="{{ class_obj.title }}" style="height:200px; object-fit: cover;">
+          {% else %}
+            <div class="card-img-top bg-secondary" style="height:200px;"></div>
+          {% endif %}
+          <div class="card-body">
+            <h5 class="card-title">{{ class_obj.title }}</h5>
+            <p class="card-text">{{ class_obj.description|truncatewords:20 }}</p>
+            <p class="card-text"><strong>Price:</strong> KES: {{ class_obj.price }}</p>
+            <p class="card-text"><small>Instructor: {{ class_obj.instructor.get_full_name }}</small></p>
+            {% if request.user.is_authenticated and request.user.role == 'learner' %}
+              {% if class_obj.id in purchased_class_ids %}
+                <p class="card-text"><strong>Schedule:</strong> {{ class_obj.schedule|date:"F j, Y, g:i a" }}</p>
+                <p class="card-text"><strong>Venue:</strong> {{ class_obj.venue_address }}</p>
+              {% else %}
+                <p class="card-text"><strong>Schedule:</strong> <em>Purchase to view schedule</em></p>
+                <p class="card-text"><strong>Venue:</strong> <em>Purchase to view venue details</em></p>
+              {% endif %}
+            {% else %}
+              <p class="card-text"><strong>Schedule:</strong> {{ class_obj.schedule|date:"F j, Y, g:i a" }}</p>
+              <p class="card-text"><strong>Venue:</strong> {{ class_obj.venue_address }}</p>
+            {% endif %}
+            <p class="card-text"><strong>Sessions:</strong> {{ class_obj.sessions.count }}</p>
+            <p class="card-text"><strong>Learners:</strong> {{ class_obj.enrollments.count }}</p>
+            <p class="card-text">
+              <strong>Rating:</strong>
+              {% for _ in "12345"|make_list %}
+                <i class="fas fa-star text-warning"></i>
+              {% endfor %}
+              (4.5/5)
+            </p>
+          </div>
+          <div class="card-footer bg-white border-top-0">
+            {% if request.user.is_authenticated %}
+              {% if request.user.role == 'learner' %}
+                {% if class_obj.id in purchased_class_ids %}
+                  <a href="{{ class_obj.get_classroom_url }}" class="btn btn-success btn-sm">Join Class</a>
+                {% else %}
+                  <form action="{% url 'payments:add-to-cart' class_obj.pk %}" method="post" class="d-inline add-to-cart-form">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary btn-sm">Add to Cart</button>
+                  </form>
+                {% endif %}
+              {% elif request.user.role == 'instructor' %}
+                {% if class_obj.id in own_class_ids %}
+                  <a href="{% url 'classes:class-update' class_obj.pk %}" class="btn btn-secondary btn-sm">Manage Class</a>
+                {% else %}
+                  <a href="{% url 'classes:class-detail' class_obj.pk %}" class="btn btn-info btn-sm">View Class</a>
+                {% endif %}
+              {% endif %}
+            {% else %}
+              <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-sm">Login to Purchase</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <p>No classes available at the moment.</p>
+      </div>
+    {% endfor %}
+  </div>
+  
+  <!-- Modal for Item Added to Cart -->
+  <div class="modal fade" id="addedToCartModal" tabindex="-1" aria-labelledby="addedToCartModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addedToCartModalLabel">Item Added to Cart</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          The item has been successfully added to your cart.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Continue Shopping</button>
+          <a href="{% url 'payments:cart-list' %}" class="btn btn-secondary">View Cart</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Purchased Classes Section -->
+  <hr class="my-5">
+  <h2 class="mb-4">Purchased Classes</h2>
+  {% if bought_classes %}
+    <div class="row">
+      {% for enrollment in bought_classes %}
+        <div class="col-md-4 mb-4">
+          <div class="card h-100 shadow-sm">
+            {% if enrollment.class_obj.image %}
+              <img src="{{ enrollment.class_obj.image.url }}" class="card-img-top" alt="{{ enrollment.class_obj.title }}" style="height:200px; object-fit: cover;">
+            {% else %}
+              <div class="card-img-top bg-secondary" style="height:200px;"></div>
+            {% endif %}
+            <div class="card-body">
+              <h5 class="card-title">{{ enrollment.class_obj.title }}</h5>
+              <p class="card-text">{{ enrollment.class_obj.description|truncatewords:20 }}</p>
+              <p class="card-text"><strong>Price:</strong> KES: {{ enrollment.class_obj.price }}</p>
+              <p class="card-text"><strong>Purchased On:</strong> {{ enrollment.paid_at|date:"F j, Y, g:i a" }}</p>
+              <p class="card-text"><strong>Schedule:</strong> {{ enrollment.class_obj.schedule|date:"F j, Y, g:i a" }}</p>
+              <p class="card-text"><strong>Venue:</strong> {{ enrollment.class_obj.venue_address }}</p>
+            </div>
+            <div class="card-footer bg-white border-top-0">
+              {% if enrollment.class_obj.is_active %}
+                <a href="{{ enrollment.class_obj.get_classroom_url }}" class="btn btn-success btn-sm">Join Class</a>
+              {% else %}
+                <a href="#" class="btn btn-secondary btn-sm disabled">Class Not Active</a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>You have not purchased any classes yet.</p>
+  {% endif %}
+  
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+  $(document).ready(function(){
+    $(".add-to-cart-form").on("submit", function(e) {
+      e.preventDefault();
+      var form = $(this);
+      $.ajax({
+         type: form.attr("method"),
+         url: form.attr("action"),
+         data: form.serialize(),
+         success: function(response) {
+             if(response.success){
+                $("#addedToCartModal").modal("show");
+             }
+         },
+         error: function(response){
+             alert("Error adding item to cart.");
+         }
+      });
+    });
+  });
+</script>
+{% endblock %}

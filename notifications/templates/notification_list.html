@@ -1,0 +1,32 @@
+{% extends "noti_base.html" %}
+{% load static %}
+{% block content %}
+<div class="container mt-5">
+  <h2>Your Notifications</h2>
+  {% if notifications %}
+    <ul class="list-group">
+      {% for notification in notifications %}
+        <li class="list-group-item">
+          <p>{{ notification.message }}</p>
+          {# Optional: display session details if available #}
+          {% if notification.session %}
+            <small class="text-muted">
+              Session: {{ notification.session.title }} - Scheduled: {{ notification.session.scheduled_time|date:"M d, Y H:i" }}
+            </small>
+            <br>
+          {% endif %}
+          {% if notification.payment %}
+            <small class="text-muted">
+              Payment for: {{ notification.payment.class_booking.title }} made on {{ notification.payment.created_at|date:"F j, Y, g:i a" }}
+            </small>
+            <br>
+          {% endif %}
+          <small class="text-muted">{{ notification.created_at|date:"F j, Y, g:i a" }}</small>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>You have no notifications.</p>
+  {% endif %}
+</div>
+{% endblock %}

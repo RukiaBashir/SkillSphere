@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    {%load static %}
+    {% load django_browser_reload %} <!-- Optional for live reloading in development -->
+
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=0.6" name="viewport">
+    <link href="{% static 'css/login.css' %}" rel="stylesheet"/>
+
+    <!-- Bootstrap core CSS -->
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/intlTelInput.css' %}" rel="stylesheet"/>
+    <link href="{% static 'css/font-awesome.min.css' %}" rel="stylesheet"/>
+    <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/stamp.png' %}">
+    <style>
+   body {
+        background: linear-gradient(
+            rgba(0, 0, 0, 0.6), 
+            rgba(0, 0, 0, 0.6)
+        ), url("{% static 'img/background.png' %}") no-repeat center center fixed;
+        background-size: cover;
+        color: #fff;
+        height: 75vh;
+        margin: 20;
+        padding-top: 10;
+        inline-flex;
+        justify-content: center;
+        align-items: center;
+    }
+</style>
+<title>SkillSphere User Accounts</title>
+
+</head>
+
+<body>
+    <!-- Loading Spinner -->
+    <h1>
+        <div class="spinner-border text-info" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </h1>
+
+    <!-- Content -->
+    <div class="registration-content" >
+       {% block content %}
+      {% endblock %}
+      <!-- Footer -->
+
+  </div>
+  
+  
+  <!-- Scripts -->
+  <!-- Spinner and Phone Number Validation Scripts -->
+  <script>
+    // Spinner removal after page load
+    window.onload = function() {
+        document.querySelector('.spinner-border').remove();
+    }
+</script>
+  <script>
+    $(document).ready(function () {
+        $('#phoneForm').on('submit', function (e) {
+            e.preventDefault();
+
+            var phoneNumber = $('#id_phone_number').val();
+            var phonePattern = /^[0-9]{10}$/; // A simple 10-digit phone number validation
+
+            if (phonePattern.test(phoneNumber)) {
+                $('#id_phone_number').removeClass('is-invalid');
+                alert("Phone number is valid");
+                // Proceed with form submission or additional actions
+            } else {
+                $('#id_phone_number').addClass('is-invalid');
+            }
+        });
+    });
+    </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+    var roleField = document.querySelector("#id_role");
+    var instructorFields = document.getElementById("instructorFields");
+    var specializationField = document.querySelector("#id_specialization");
+
+    function toggleInstructorFields() {
+        if (roleField && roleField.value === 'instructor') {
+            instructorFields.style.display = "block";
+            if (specializationField) {
+                specializationField.required = true;  // Make required if visible
+            }
+        } else {
+            instructorFields.style.display = "none";
+            if (specializationField) {
+                specializationField.required = false; // Remove required when hidden
+            }
+        }
+    }
+
+    // Call toggle on page load (in case of a preset value)
+    toggleInstructorFields();
+
+    // Attach event listener if roleField exists
+    if (roleField) {
+        roleField.addEventListener("change", toggleInstructorFields);
+    }
+});
+
+</script>
+<!-- jQuery inclusion -->
+<script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</body>
+</html>

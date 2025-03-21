@@ -1,0 +1,77 @@
+{% extends "classes_base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load l10n %}
+
+{% block content %}
+<div class="container marketing my-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="my-0">Available Classes</h2>
+    {% if request.user.is_authenticated and request.user.role == 'instructor' %}
+      <a href="{% url 'classes:class-create' %}" class="btn btn-primary">Create New Class</a>
+    {% endif %}
+  </div>
+  <div class="row">
+    {% for class_obj in classes %}
+      <div class="col-md-4 mb-0">
+        <div class="card h-100 shadow-sm">
+          {% if class_obj.image %}
+            <img src="{{ class_obj.image.url }}" class="card-img-top" alt="{{ class_obj.title }}" style="height:200px; object-fit: cover;">
+          {% else %}
+            <div class="card-img-top" style="background-color:#ddd; height:200px;"></div>
+          {% endif %}
+          <div class="card-body py-2">
+            <h5 class="card-title my-0">{{ class_obj.title }}</h5>
+            <p class="card-text my-0">{{ class_obj.description|truncatewords:20 }}</p>
+            <p class="card-text my-0"><strong>Price:</strong> KES: {{ class_obj.price }}</p>
+            <p class="card-text my-0"><small>Instructor: {{ class_obj.instructor.get_full_name }}</small></p>
+            {% if request.user.is_authenticated and request.user.role == 'learner' %}
+              {% if class_obj.id in purchased_class_ids %}
+                <p class="card-text my-0"><strong>Schedule:</strong> {{ class_obj.schedule|date:"F j, Y, g:i a" }}</p>
+                <p class="card-text my-0"><strong>Venue:</strong> {{ class_obj.venue_address }}</p>
+              {% else %}
+                <p class="card-text my-0"><strong>Schedule:</strong> <em>Purchase to view schedule</em></p>
+                <p class="card-text my-0"><strong>Venue:</strong> <em>Purchase to view venue details</em></p>
+              {% endif %}
+            {% else %}
+              <p class="card-text my-0"><strong>Schedule:</strong> {{ class_obj.schedule|date:"F j, Y, g:i a" }}</p>
+              <p class="card-text my-0"><strong>Venue:</strong> {{ class_obj.venue_address }}</p>
+            {% endif %}
+            <p class="card-text my-0"><strong>Learners:</strong> {{ class_obj.enrollments.count }}</p>
+            <p class="card-text my-0">
+              <strong>Rating:</strong>
+              {% for _ in "12345"|make_list %}
+                <i class="fas fa-star text-warning"></i>
+              {% endfor %}
+              (4.5/5)
+            </p>
+          </div>
+          <div class="card-footer bg-white border-top-0 py-1">
+            {% if request.user.is_authenticated %}
+              {% if request.user.role == 'learner' %}
+                {% if class_obj.id in purchased_class_ids %}
+                  <a href="{% url 'classes:enrollment-list' %}" class="btn btn-success btn-sm">Join Class</a>
+                {% else %}
+                  <a href="{% url 'payments:cart-list' %}?item={{ class_obj.pk }}" class="btn btn-primary btn-sm">Add to Cart</a>
+                {% endif %}
+              {% elif request.user.role == 'instructor' %}
+                {% if class_obj.id in own_class_ids %}
+                  <a href="{% url 'classes:class-update' class_obj.pk %}" class="btn btn-secondary btn-sm">Manage Class</a>
+                {% else %}
+                  <a href="{% url 'classes:class-detail' class_obj.pk %}" class="btn btn-info btn-sm">View Class</a>
+                {% endif %}
+              {% endif %}
+            {% else %}
+              <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-sm">Login to Purchase</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <p class="my-0">No classes available at the moment.</p>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

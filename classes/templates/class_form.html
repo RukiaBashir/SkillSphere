@@ -1,0 +1,19 @@
+{% extends "classes_base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+  <h2>{% if object %}Edit{% else %}Create{% endif %} Class</h2>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    {% if object and object.image %}
+      <div class="mb-3">
+        <img src="{{ object.image.url }}" alt="{{ object.title }}" class="img-thumbnail" style="max-width: 200px;">
+      </div>
+    {% endif %}
+    
+    {{ form|crispy }}
+    
+    <button type="submit" class="btn btn-primary">Save</button>
+  </form>
+{% endblock %}

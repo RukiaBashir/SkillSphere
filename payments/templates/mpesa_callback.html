@@ -1,0 +1,33 @@
+{% extends "payments_base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+    <h2>M-Pesa Payment Status</h2>
+    
+    {% if result_code == 0 %}
+        <div class="alert alert-success">
+            <h4>Payment Successful!</h4>
+            <p><strong>Amount Paid:</strong> KES {{ amount }}</p>
+            <p><strong>Receipt Number:</strong> {{ mpesa_receipt_number }}</p>
+            <p><strong>Phone Number:</strong> {{ phone_number }}</p>
+            <p><strong>Transaction Message:</strong> {{ result_desc }}</p>
+        </div>
+    {% else %}
+        <div class="alert alert-danger">
+            <h4>Payment Failed</h4>
+            <p><strong>Error Code:</strong> {{ result_code }}</p>
+            <p><strong>Error Message:</strong> {{ result_desc }}</p>
+        </div>
+    {% endif %}
+
+    <h3>Transaction Details</h3>
+    <ul class="list-group">
+        <li class="list-group-item"><strong>Merchant Request ID:</strong> {{ merchant_request_id }}</li>
+        <li class="list-group-item"><strong>Checkout Request ID:</strong> {{ checkout_request_id }}</li>
+        <li class="list-group-item"><strong>Phone Number:</strong> {{ phone_number }}</li>
+    </ul>
+
+    <a href="{% url 'payments:history' %}" class="btn btn-primary mt-3">Back to Payment History</a>
+</div>
+{% endblock %}

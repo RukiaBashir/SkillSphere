@@ -1,0 +1,69 @@
+{% extends 'index_base.html' %}
+
+{% block content %}
+{% load static %}
+{% load crispy_forms_tags %}
+<style>
+  /* Override default text color to black on the registration page */
+  body, h2, label, p, a, .card, .card-body, .card-header {
+    color: #000 !important;
+  }
+</style>
+<style>
+  /* Override default text color to black on the registration page */
+  body, h2, label, p, a, .card, .card-body, .card-header {
+    color: #000 !important;
+  }
+
+  /* Make the card background 75% transparent */
+  .card {
+    background: rgba(255, 255, 255, 0.75) !important;
+  }
+</style>
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-center">
+          <h2 class="text-white">User Login</h2>
+        </div>
+        <div class="card-body">
+          <div class="text-center mb-4">
+            <a class="navbar-brand" href="/">
+              <img src="{% static 'img/skill_logo.png' %}" width="120" alt="Home" class="logo-glow">
+            </a>
+          </div>
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-dismissible fade show {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %}" role="alert">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+          <form action="{% url 'accounts:login' %}" method="POST" id="login-form">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="username" class="form-label">User Name</label>
+              <input type="text" class="form-control" id="username" name="username" placeholder="Enter username" required>
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label">User Password</label>
+              <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
+            </div>
+            <div class="mb-3 text-end">
+              <a href="{% url 'accounts:forgot_password' %}" class="text-decoration-none">Forgot Password?</a>
+            </div>
+            <div class="d-grid mb-3">
+              <button type="submit" class="btn btn-primary">Login</button>
+            </div>
+          </form>
+          <div class="text-center">
+            <p>Don't have an account? <a href="{% url 'accounts:register' %}" class="text-primary text-decoration-none">Register</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
