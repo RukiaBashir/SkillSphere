@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import dj_database_url
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -15,7 +16,6 @@ ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '').split(',')
 AUTH_USER_MODEL = 'accounts.SkillUser'
 
 # DATABASE CONFIGURATION
-import dj_database_url
 
 DATABASES = {
     "default": dj_database_url.config(
