@@ -1,0 +1,117 @@
+{% extends "payments_base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-5">
+  <h1 class="mb-4">Checkout</h1>
+  <!-- Display Django messages -->
+  {% if messages %}
+      {% for message in messages %}
+          <div class="alert alert-dismissible fade show {% if 'error' in message.tags %}alert-danger{% elif 'success' in message.tags %}alert-success{% else %}alert-info{% endif %}" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+      {% endfor %}
+  {% endif %}
+  <div class="row">
+    <!-- Left Column: Cart Items -->
+    <div class="col-md-8">
+      {% if cart_items %}
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Class</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in cart_items %}
+              <tr>
+                <td>
+                  {% if item.payment_status == "completed" %}
+                    <a href="{{ item.class_booking.get_absolute_url }}">
+                      {{ item.class_booking.title }}
+                    </a>
+                  {% else %}
+                    {{ item.class_booking.title }} <small class="text-muted">(Payment pending)</small>
+                  {% endif %}
+                </td>
+                <td>KES {{ item.amount }}</td>
+                <td>
+                  {% if item.payment_status == "pending" %}
+                    <span class="badge bg-warning text-dark">Pending</span>
+                  {% elif item.payment_status == "processing" %}
+                    <span class="badge bg-info">Processing</span>
+                  {% elif item.payment_status == "completed" %}
+                    <span class="badge bg-success">Paid</span>
+                  {% else %}
+                    {{ item.payment_status|capfirst }}
+                  {% endif %}
+                </td>
+                <td>
+                  <a href="{% url 'payments:cart-delete' item.pk %}" class="btn btn-danger btn-sm">Remove</a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>Your cart is empty.</p>
+      {% endif %}
+    </div>
+
+    <!-- Right Column: Order Summary & Notifications -->
+    <div class="col-md-4">
+      <!-- Order Summary -->
+      <div class="card mb-4">
+        <div class="card-header">
+          Order Summary
+        </div>
+        <div class="card-body">
+          <h5>Total: KES {{ total }}</h5>
+          <p>Please confirm your payment by clicking below.</p>
+          <form method="post" id="checkoutForm">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success btn-block">Confirm Payment</button>
+          </form>
+          <p class="mt-3 small text-muted">
+            Note: Booking details (e.g. venue address and schedule) will be shown once payment is confirmed.
+          </p>
+        </div>
+      </div>
+
+      <!-- Display Pending Orders Count if any -->
+      {% if request.user.is_authenticated and pending_orders_count %}
+      <div class="alert alert-info">
+        Pending Orders Count: <strong>{{ pending_orders_count }}</strong>
+      </div>
+      {% endif %}
+
+      <!-- Notifications Section -->
+      {% if notifications %}
+      <div class="card">
+        <div class="card-header">
+          Notifications
+        </div>
+        <ul class="list-group list-group-flush">
+          {% for note in notifications %}
+            <li class="list-group-item">
+              {{ note.message }} <br>
+              <small class="text-muted">{{ note.created_at|date:"M d, Y H:i" }}</small>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Link to Payment History -->
+  <div class="mt-4">
+    <a href="{% url 'payments:payment-history' %}" class="btn btn-secondary">View Payment History</a>
+  </div>
+</div>
+{% endblock %}

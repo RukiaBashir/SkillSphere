@@ -1,0 +1,79 @@
+{% extends "classes_base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container my-5">
+  <h1 class="mb-4">Dashboard</h1>
+  {% if request.user.is_authenticated %}
+    <div class="row">
+      <!-- Section: Browse Available Classes -->
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-header bg-primary text-white">
+            Available Classes
+          </div>
+          <div class="card-body">
+            <p>Explore all available classes.</p>
+            <a href="{% url 'classes:class-list' %}" class="btn btn-primary btn-sm">View Classes</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Enrolled/Created Classes -->
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+          <div class="card-header bg-success text-white">
+            {% if request.user.role == 'learner' %}
+              My Enrolled Classes
+            {% else %}
+              My Created Classes
+            {% endif %}
+          </div>
+          <div class="card-body">
+            <p>
+              {% if request.user.role == 'learner' %}
+                View the classes you've enrolled in.
+              {% else %}
+                View the classes you have created.
+              {% endif %}
+            </p>
+            {% if request.user.role == 'learner' %}
+              <a href="{% url 'classes:enrollment-list' %}" class="btn btn-success btn-sm">My Enrollments</a>
+            {% else %}
+              <a href="{% url 'classes:dashboard' %}" class="btn btn-success btn-sm">My Created Classes</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Additional Options / Payment History -->
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+          {% if request.user.role == 'learner' %}
+            <div class="card-header bg-warning text-white">
+              Additional Options
+            </div>
+            <div class="card-body">
+              <p>Check your cart or update your profile.</p>
+              <a href="{% url 'payments:cart-list' %}" class="btn btn-warning btn-sm">View Cart</a>
+            </div>
+          {% elif request.user.role == 'instructor' %}
+            <div class="card-header bg-info text-white">
+              Payment History
+            </div>
+            <div class="card-body">
+              <p>View your registration fee payment history.</p>
+              <a href="{% url 'payments:payment-history' %}" class="btn btn-info btn-sm">View Payment History</a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <div class="alert alert-info">
+      Please <a href="{% url 'accounts:login' %}">login</a> to access your dashboard.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

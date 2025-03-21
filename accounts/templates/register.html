@@ -1,0 +1,118 @@
+{% extends 'index_base.html' %}
+
+{% block content %}
+{% load static %}
+{% load crispy_forms_tags %}
+<style>
+  /* Override default text color to black on the registration page */
+  body, h2, label, p, a, .card, .card-body, .card-header {
+    color: #000 !important;
+  }
+</style>
+<style>
+  /* Override default text color to black on the registration page */
+  body, h2, label, p, a, .card, .card-body, .card-header {
+    color: #000 !important;
+  }
+
+  /* Make the card background 75% transparent */
+  .card {
+    background: rgba(255, 255, 255, 0.75) !important;
+  }
+</style>
+
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-center">
+          <h2 class="text-white">User Registration</h2>
+        </div>
+        <div class="card-body">
+          <div class="text-center mb-4">
+            <a class="navbar-brand" href="/">
+              <img src="{% static 'img/skill_logo.png' %}" width="120" alt="Home" class="logo-glow">
+            </a>
+          </div>
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-dismissible fade show {% if 'error' in message.tags %}alert-danger{% elif 'success' in message.tags %}alert-success{% else %}alert-info{% endif %}" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          {% endif %}
+          <form action="{% url 'accounts:register' %}" method="POST" id="registration-form" enctype="multipart/form-data">
+            {% csrf_token %}
+            <fieldset class="border p-3 mb-3">
+              <legend class="w-auto">Personal Information</legend>
+              {{ form.first_name|as_crispy_field }}
+              {{ form.last_name|as_crispy_field }}
+              {{ form.birth_date|as_crispy_field }}
+            </fieldset>
+            
+            <fieldset class="border p-3 mb-3">
+              <legend class="w-auto">Account Details</legend>
+              {{ form.username|as_crispy_field }}
+              {{ form.email|as_crispy_field }}
+              {{ form.phone_number|as_crispy_field }}
+            </fieldset>
+            
+            <fieldset class="border p-3 mb-3">
+              <legend class="w-auto">Professional Information</legend>
+              {{ form.role|as_crispy_field }}
+              <!-- Specialization field is shown only for instructors -->
+              <div id="instructorFields" style="display: none;">
+                {{ form.specialization|as_crispy_field }}
+              </div>
+            </fieldset>
+            
+            <fieldset class="border p-3 mb-3">
+              <legend class="w-auto">Profile Image</legend>
+              {{ form.profile_image|as_crispy_field }}
+            </fieldset>
+            
+            <fieldset class="border p-3 mb-3">
+              <legend class="w-auto">Security</legend>
+              {{ form.password1|as_crispy_field }}
+              {{ form.password2|as_crispy_field }}
+            </fieldset>
+            
+            <div class="text-center">
+              <button class="btn btn-primary" type="submit">Register</button>
+            </div>
+          </form>
+          <div class="text-center mt-3">
+            Already have an account? <a href="{% url 'accounts:login' %}" class="text-dark text-decoration-none"><u>Login</u></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript to toggle the specialization field based on the role selection -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    var roleField = document.querySelector("#id_role");
+    var instructorFields = document.getElementById("instructorFields");
+
+    function toggleInstructorFields() {
+        if (roleField && roleField.value === 'instructor') {
+            instructorFields.style.display = "block";
+        } else {
+            instructorFields.style.display = "none";
+        }
+    }
+
+    // Call toggle on page load (in case of a preset value)
+    toggleInstructorFields();
+
+    // Attach event listener if roleField exists
+    if (roleField) {
+        roleField.addEventListener("change", toggleInstructorFields);
+    }
+});
+</script>
+
+{% endblock %}

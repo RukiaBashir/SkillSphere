@@ -1,0 +1,71 @@
+{% extends "classes_base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">My Enrolled/Purchased Classes</h2>
+
+    {% if request.user.role == "instructor" %}
+        <h4>Classes You Teach</h4>
+        {% for class_obj in request.user.class_set.all %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>{{ class_obj.title }}</h5>
+                </div>
+                <div class="card-body">
+                    {% with class_obj.enrollments.all as enrollments %}
+                        {% if enrollments %}
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Learner</th>
+                                        <th>Learning Stage</th>
+                                        <th>Update Progress</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for enrollment in enrollments %}
+                                        <tr>
+                                            <td>{{ enrollment.learner.get_full_name }}</td>
+                                            <td>{{ enrollment.get_learning_stage_display }}</td>
+                                            <td>
+                                                <form method="POST" action="{% url 'classes:update_learning_stage' enrollment.id %}">
+                                                    {% csrf_token %}
+                                                    <select name="learning_stage" class="form-select form-select-sm">
+                                                        <option value="Beginner" {% if enrollment.learning_stage == "Beginner" %}selected{% endif %}>Beginner</option>
+                                                        <option value="Intermediate" {% if enrollment.learning_stage == "Intermediate" %}selected{% endif %}>Intermediate</option>
+                                                        <option value="Expert" {% if enrollment.learning_stage == "Expert" %}selected{% endif %}>Expert</option>
+                                                    </select>
+                                                    <button type="submit" class="btn btn-primary btn-sm mt-2">Update</button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <p class="text-muted">No enrolled students yet.</p>
+                        {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+        {% endfor %}
+    {% elif request.user.role == "learner" %}
+        <h4>My Purchased Classes</h4>
+        <div class="row">
+            {% for enrollment in enrollments %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ enrollment.class_obj.title }}</h5>
+                            <p class="card-text">Current Progress: <strong>{{ enrollment.get_learning_stage_display }}</strong></p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>You are not enrolled in any classes yet.</p>
+    {% endif %}
+</div>
+{% endblock %}
