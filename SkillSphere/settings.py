@@ -15,15 +15,11 @@ ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '').split(',')
 AUTH_USER_MODEL = 'accounts.SkillUser'
 
 # DATABASE CONFIGURATION
+import dj_database_url
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT', '5432'),
-    }
+    "default": dj_database_url.config(
+        default="postgresql://skill_sphere_database_user:LuOTzPGVAKDXl7tkMkmTMlpRwqBa6hLd@dpg-cveu4f2n91rc73aq8bag-a/skill_sphere_database")
 }
 
 # SECURITY SETTINGS
