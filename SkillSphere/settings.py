@@ -3,6 +3,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
 from decouple import config
+
 # Load environment variables from a .env file
 load_dotenv()
 
@@ -53,7 +54,6 @@ INSTALLED_APPS = [
     'notifications',
 ]
 
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -87,16 +87,14 @@ TEMPLATES = [
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
-
 WSGI_APPLICATION = 'SkillSphere.wsgi.application'
-
-
 
 # DATABASE CONFIGURATION
 
 DATABASES = {
     "default": dj_database_url.config(
-        default="postgresql://skillsphere_database_34df_user:JkDKXlTjeCS9kSfwW7G21yUlrFfwhwTz@dpg-cvfk2i8gph6c73bdh0e0-a/skillsphere_database_34df")
+        default="postgresql://skillsphere_database_34df_user:JkDKXlTjeCS9kSfwW7G21yUlrFfwhwTz@dpg"
+                "-cvfk2i8gph6c73bdh0e0-a/skillsphere_database_34df")
 
 }
 
