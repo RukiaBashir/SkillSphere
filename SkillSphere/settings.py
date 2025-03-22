@@ -91,10 +91,10 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 WSGI_APPLICATION = 'SkillSphere.wsgi.application'
 
 # DATABASE CONFIGURATION
-
 DATABASES = {
     "default": dj_database_url.config(
-        default="postgresql://skillsphere_database_user:my9kd96GqJW7fFLIR0WEHXxPARKpAiJj@dpg-cvfd84jqf0us73fpbscg-a/skillsphere_database")
+        default=os.getenv("DATABASE_URL")
+    )
 }
 
 # SECURITY SETTINGS
