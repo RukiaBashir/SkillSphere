@@ -96,7 +96,7 @@ WSGI_APPLICATION = 'SkillSphere.wsgi.application'
 
 DATABASES = {
     "default": dj_database_url.config(
-        default="postgresql://skillsphere_database_user:my9kd96GqJW7fFLIR0WEHXxPARKpAiJj@dpg-cvfd84jqf0us73fpbscg-a/skillsphere_database")
+        default="postgresql://skillsphere_database_34df_user:JkDKXlTjeCS9kSfwW7G21yUlrFfwhwTz@dpg-cvfk2i8gph6c73bdh0e0-a/skillsphere_database_34df")
 
 }
 
