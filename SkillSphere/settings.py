@@ -93,7 +93,7 @@ WSGI_APPLICATION = 'SkillSphere.wsgi.application'
 
 DATABASES = {
     "default": dj_database_url.config(
-        default=os.getenv("DATABASE_URL"),
+        default=os.getenv("postgresql://skillsphere_database_user:my9kd96GqJW7fFLIR0WEHXxPARKpAiJj@dpg-cvfd84jqf0us73fpbscg-a/skillsphere_database"),
         engine="django.db.backends.postgresql"  # Ensure PostgreSQL engine is set
     )
 }
