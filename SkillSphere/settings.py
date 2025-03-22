@@ -90,10 +90,11 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 WSGI_APPLICATION = 'SkillSphere.wsgi.application'
 
-# DATABASE CONFIGURATION
+
 DATABASES = {
     "default": dj_database_url.config(
-        default=os.getenv("DATABASE_URL")
+        default=os.getenv("DATABASE_URL"),
+        engine="django.db.backends.postgresql"  # Ensure PostgreSQL engine is set
     )
 }
 
