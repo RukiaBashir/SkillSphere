@@ -42,6 +42,7 @@ def register(request):
             request.session['otp'] = otp
             request.session['user_id'] = user.id
 
+
             send_mail(
                 'Your OTP Code for SkillSphere',
                 f'Your OTP Code is {otp}',
@@ -49,6 +50,7 @@ def register(request):
                 [user.email],
                 fail_silently=True,
             )
+            print(f'Your SkillSphere OTP Code is {otp}')
 
             if user.phone_number:
                 try:
