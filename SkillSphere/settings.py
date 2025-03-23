@@ -14,7 +14,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="").split(",")
 
-DEBUG = config("DEBUG", default=False, cast=bool)
+DEBUG = config("DEBUG", default=True, cast=bool)
 
 AUTH_USER_MODEL = 'accounts.SkillUser'
 """
