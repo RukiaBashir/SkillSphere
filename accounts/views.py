@@ -47,7 +47,7 @@ def register(request):
                 f'Your OTP Code is {otp}',
                 settings.DEFAULT_FROM_EMAIL,
                 [user.email],
-                fail_silently=False,
+                fail_silently=True,
             )
 
             if user.phone_number:
