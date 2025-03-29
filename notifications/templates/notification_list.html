@@ -1,32 +1,43 @@
-{% extends "noti_base.html" %}
+{% extends "notifications_base.html" %}
 {% load static %}
+{% load l10n %}
+
 {% block content %}
-<div class="container mt-5">
-  <h2>Your Notifications</h2>
-  {% if notifications %}
-    <ul class="list-group">
+<div class="container mt-4">
+    <h2>
+      {% if user_role == 'instructor' %}
+        Instructor Notifications
+      {% elif user_role == 'learner' %}
+        Learner Notifications
+      {% else %}
+        Your Notifications
+      {% endif %}
+    </h2>
+    
+    {% if notifications %}
+    <ul class="list-group mt-3">
       {% for notification in notifications %}
-        <li class="list-group-item">
-          <p>{{ notification.message }}</p>
-          {# Optional: display session details if available #}
-          {% if notification.session %}
-            <small class="text-muted">
-              Session: {{ notification.session.title }} - Scheduled: {{ notification.session.scheduled_time|date:"M d, Y H:i" }}
-            </small>
-            <br>
-          {% endif %}
-          {% if notification.payment %}
-            <small class="text-muted">
-              Payment for: {{ notification.payment.class_booking.title }} made on {{ notification.payment.created_at|date:"F j, Y, g:i a" }}
-            </small>
-            <br>
-          {% endif %}
-          <small class="text-muted">{{ notification.created_at|date:"F j, Y, g:i a" }}</small>
-        </li>
+      <li class="list-group-item d-flex justify-content-between align-items-center 
+          {% if not notification.read %}list-group-item-warning{% endif %}">
+          <div>
+              {{ notification.message }}
+              <br>
+              <small class="text-muted">{{ notification.created_at|date:"M d, Y H:i" }}</small>
+          </div>
+          <span class="badge bg-secondary">
+              {% if notification.time_label == "New" %}
+                  New
+              {% else %}
+                  {{ notification.time_label }} ago
+              {% endif %}
+          </span>
+      </li>
       {% endfor %}
     </ul>
-  {% else %}
-    <p>You have no notifications.</p>
-  {% endif %}
+    {% else %}
+      <div class="alert alert-info mt-3" role="alert">
+          You have no notifications.
+      </div>
+    {% endif %}
 </div>
 {% endblock %}

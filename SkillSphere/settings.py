@@ -1,22 +1,3 @@
-import os
-from pathlib import Path
-from dotenv import load_dotenv
-import dj_database_url
-from decouple import config
-
-# Load environment variables from a .env file
-load_dotenv()
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-# SECURITY SETTINGS
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
-
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="").split(",")
-
-DEBUG = config("DEBUG", default=True, cast=bool)
-
-AUTH_USER_MODEL = 'accounts.SkillUser'
 """
 Django settings for SkillSphere project.
 
@@ -28,6 +9,27 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
+import os
+from pathlib import Path
+
+import environ
+from dotenv import load_dotenv
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = 'django-insecure-22m*2ubzg8$7rb5llmr+%1)cs2*rwvew6r@jamb-ai0*k&ka@k'
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
+
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.100.42']
+
+AUTH_USER_MODEL = 'accounts.SkillUser'
 
 LOGIN_URL = '/login/'
 LOGIN_URL_REDIRECT = '/'
@@ -56,7 +58,6 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -89,53 +90,113 @@ CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 WSGI_APPLICATION = 'SkillSphere.wsgi.application'
 
-# DATABASE CONFIGURATION
+# Database
+# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASE CONFIGURATION
 
 DATABASES = {
-    "default": dj_database_url.config(
-        default="postgresql://skillsphere_database_hy2l_user:WCWwwvTq22HgPNh8VtdQNWL28KUd3bZR@dpg-cvfktsfnoe9s73biipb0-a/skillsphere_database_hy2l"
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'skillsphere_db',
+        'USER': 'root',
+        'PASSWORD': '',
+        'HOST': 'localhost',
+        'PORT': ''
+    }
 
 }
+'''
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'skillsphere_db',
+        'USER': 'Admin',
+        'PASSWORD': '123456l7',
+        'HOST': 'localhost',
+        'PORT': '5432',
 
-# SECURITY SETTINGS
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
-SECURE_HSTS_SECONDS = 31536000  # 1 year
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
-SECURE_SSL_REDIRECT = True
+    }
 
-# STATIC & MEDIA FILES
+}
+'''
+# Password validation
+# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+
+# Internationalization
+# https://docs.djangoproject.com/en/4.2/topics/i18n/
+
+LANGUAGE_CODE = 'en-ke'  # English (Kenya)
+TIME_ZONE = 'Africa/Nairobi'
+
+DATETIME_INPUT_FORMATS = ['%Y-%m-%dT%H:%M']
+
+USE_I18N = True
+USE_L10N = True
+USE_TZ = True
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/4.2/howto/static-files/
+
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "assets"),
+]
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# EMAIL CONFIGURATION
+# Email configuration (Example with Gmail)
+
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # Load environment variables from .env
+
+# Twilio Settings
+TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
+TWILIO_PHONE_NUMBER = 'TWILIO_PHONE_NUMBER'
+TWILIO_MESSAGING_SERVICE_SID = 'TWILIO_MESSAGING_SERVICE_SID'
+TWILIO_VERIFY_SERVICE_SID = os.getenv('TWILIO_VERIFY_SERVICE_SID')
+
+# Default Email Settings (Ensure these are configured for sending OTP via email)
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = os.getenv('EMAIL_HOST')
-EMAIL_PORT = os.getenv('EMAIL_PORT')
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS') == 'True'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-# MPESA CONFIGURATION
-MPESA_CONSUMER_KEY = os.getenv('MPESA_CONSUMER_KEY')
-MPESA_CONSUMER_SECRET = os.getenv('MPESA_CONSUMER_SECRET')
-MPESA_TOKEN_URL = os.getenv('MPESA_TOKEN_URL')
-MPESA_BUSINESS_SHORT_CODE = os.getenv('MPESA_BUSINESS_SHORT_CODE')
-MPESA_PASSKEY = os.getenv('MPESA_PASSKEY')
-MPESA_STK_PUSH_URL = os.getenv('MPESA_STK_PUSH_URL')
-MPESA_CALLBACK_URL = os.getenv('MPESA_CALLBACK_URL')
 
-# TWILIO CONFIGURATION
-TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
-TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
-TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
-TWILIO_MESSAGING_SERVICE_SID = os.getenv('TWILIO_MESSAGING_SERVICE_SID')
+MPESA_CONSUMER_KEY='MPESA_CONSUMER_KEY'
+MPESA_CONSUMER_SECRET='MPESA_CONSUMER_SECRET'
+MPESA_TOKEN_URL='MPESA_TOKEN_URL'
+MPESA_BUSINESS_SHORT_CODE='MPESA_BUSINESS_SHORT_CODE'
+MPESA_PASSKEY='MPESA_PASSKEY'
+MPESA_STK_PUSH_URL='MPESA_STK_PUSH_URL'
+MPESA_CALLBACK_URL='MPESA_CALLBACK_URL'
+
+

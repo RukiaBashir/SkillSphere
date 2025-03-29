@@ -4,81 +4,85 @@
 {% load l10n %}
 
 {% block content %}
-  <h2>{{ class_obj.title }}</h2>
-  <p>Instructor: {{ class_obj.instructor }}</p>
-  <p>Skill Category: {{ class_obj.skill_category.name }}</p>
-  <p>Description: {{ class_obj.description }}</p>
-  <p>Price: KES: {{ class_obj.price }}</p>
-  <p>Schedule: {{ class_obj.schedule|date:"F j, Y, g:i a" }}</p>
-  <p>Available Slots: {{ class_obj.available_slots }}</p>
-  
-  {% if request.user.is_authenticated %}
-    {% if request.user.role == 'instructor' %}
-      {% if request.user == class_obj.instructor %}
-        <a href="{% url 'classes:class-update' class_obj.pk %}">Edit</a> |
-        <a href="#" class="delete-btn" data-url="{% url 'classes:class-delete' class_obj.pk %}">Delete</a>
-      {% else %}
-        <p class="text-muted">You do not have permission to manage this class.</p>
-      {% endif %}
-    {% elif request.user.role == 'learner' %}
-      {% comment %}
-        Check in order:
-        1. If purchased, show Join Class
-        2. Else if already in cart, show Go to Cart
-        3. Else, show payment form
-      {% endcomment %}
-      {% if class_obj.id in purchased_class_ids %}
-        <a href="{{ class_obj.get_classroom_url }}" class="btn btn-success">Join Class</a>
-      {% elif class_obj.id in cart_class_ids %}
-        <a href="{% url 'payments:cart-list' %}" class="btn btn-warning">Go to Cart</a>
-      {% else %}
-        <form action="{% url 'payments:cart-list' %}?item={{ class_obj.pk }}" method="post" style="display:inline;">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-success">Pay with Mpesa</button>
-        </form>
-      {% endif %}
+  <div class="container my-5">
+    {% comment %} Display thumbnail if available {% endcomment %}
+    {% if class_obj.image %}
+      <img src="{{ class_obj.image.url }}" alt="{{ class_obj.title }}" class="img-fluid mb-3" style="max-height: 300px; object-fit: cover;">
     {% endif %}
-  {% else %}
-    <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-sm">Login to Purchase</a>
-  {% endif %}
 
-  <!-- Delete Confirmation Modal (for instructors) -->
-  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          Are you sure you want to delete this class?
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-          <form id="delete-form" method="post" action="">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger">Delete</button>
-          </form>
+    <h2>{{ class_obj.title }}</h2>
+    <p><strong>Instructor:</strong> {{ class_obj.instructor }}</p>
+    <p><strong>Skill Category:</strong> {{ class_obj.skill_category.name }}</p>
+    <p><strong>Description:</strong> {{ class_obj.description }}</p>
+    <p><strong>Price:</strong> KES: {{ class_obj.price }}</p>
+    <p><strong>Schedule:</strong> {{ class_obj.schedule|date:"F j, Y, g:i a" }}</p>
+    <p><strong>Available Slots:</strong> {{ class_obj.available_slots }}</p>
+    
+    {% if request.user.is_authenticated %}
+      {% if request.user.role == 'instructor' %}
+        {% if request.user == class_obj.instructor %}
+          <a href="{% url 'classes:class-update' class_obj.pk %}" class="btn btn-primary">Edit</a> |
+          <a href="#" class="btn btn-danger delete-btn" data-url="{% url 'classes:class-delete' class_obj.pk %}">Delete</a>
+        {% else %}
+          <p class="text-muted">You do not have permission to manage this class.</p>
+        {% endif %}
+      {% elif request.user.role == 'learner' %}
+        {% comment %}
+          Check in order:
+          1. If purchased, show Join Class
+          2. Else if already in cart, show Go to Cart
+          3. Else, show payment form
+        {% endcomment %}
+        {% if class_obj.id in purchased_class_ids %}
+          <a href="{{ class_obj.get_classroom_url }}" class="btn btn-success">Join Class</a>
+        {% elif class_obj.id in cart_class_ids %}
+          <a href="{% url 'payments:cart-list' %}" class="btn btn-warning">Go to Cart</a>
+        {% else %}
+        <p>Owned</p>
+        {% endif %}
+      {% endif %}
+    {% else %}
+      <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-sm">Login to Purchase</a>
+    {% endif %}
+
+    <!-- Delete Confirmation Modal (for instructors) -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            Are you sure you want to delete this class?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <form id="delete-form" method="post" action="">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- JavaScript to trigger the delete modal -->
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      const deleteButtons = document.querySelectorAll(".delete-btn");
-      const deleteForm = document.getElementById("delete-form");
+    <!-- JavaScript to trigger the delete modal -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        const deleteButtons = document.querySelectorAll(".delete-btn");
+        const deleteForm = document.getElementById("delete-form");
 
-      deleteButtons.forEach(function(button) {
-        button.addEventListener("click", function(e) {
-          e.preventDefault();
-          deleteForm.action = button.getAttribute("data-url");
-          $('#deleteModal').modal('show');
+        deleteButtons.forEach(function(button) {
+          button.addEventListener("click", function(e) {
+            e.preventDefault();
+            deleteForm.action = button.getAttribute("data-url");
+            $('#deleteModal').modal('show');
+          });
         });
       });
-    });
-  </script>
+    </script>
+  </div>
 {% endblock %}

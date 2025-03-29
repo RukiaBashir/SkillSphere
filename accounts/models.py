@@ -57,6 +57,7 @@ class SkillUser(AbstractUser):
 
     # Fields from the form
     username = models.CharField(max_length=10, unique=True)
+    email = models.EmailField(unique=False)
     first_name = models.CharField(max_length=100, blank=True, null=True)
     last_name = models.CharField(max_length=100, blank=True, null=True)
     specialization = models.CharField(max_length=100)

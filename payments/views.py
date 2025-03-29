@@ -411,6 +411,7 @@ class CheckoutView(LoginRequiredMixin, View):
         except Exception as e:
             return JsonResponse({"error": f"An error occurred: {e}"}, status=500)
 
+
 class AddToCartView(LoginRequiredMixin, View):
     """
     Handles adding a class to the cart.
@@ -496,7 +497,7 @@ class CartItemHistoryListView(LoginRequiredMixin, ListView):
     For learners, shows completed payments for class bookings.
     """
     model = CartItem
-    template_name = 'history.html'
+    template_name = 'payment_history.html'
     context_object_name = 'payment_history'
 
     def get_queryset(self):
@@ -533,66 +534,18 @@ class CartItemHistoryListView(LoginRequiredMixin, ListView):
                     'expiry_date': expiry_date,
                     'is_expired': is_expired,
                     'join_url': payment.class_booking.get_classroom_url()
-                                if payment.class_booking and hasattr(payment.class_booking, 'get_classroom_url')
-                                else None,
+                    if payment.class_booking and hasattr(payment.class_booking, 'get_classroom_url')
+                    else None,
                 })
         context['payment_history'] = history
         return context
+
 
 class PaymentHistoryListView(LoginRequiredMixin, ListView):
-    """
-    Displays payment history.
-    - For instructors: shows completed registration fee payments (with class_booking null).
-    - For learners: shows all completed CartItem records (i.e. purchased classes).
-    Also adds extra context for learners: purchase date, expiry date, is_expired flag, join URL,
-    and a list of purchased class IDs.
-    """
     model = CartItem
-    template_name = 'history.html'
-    context_object_name = 'payment_history'
+    template_name = 'payment_history.html'
+    context_object_name = 'transactions'
 
     def get_queryset(self):
-        user = self.request.user
-        if user.role == 'instructor':
-            # Registration fee payments only (no associated class) that are completed.
-            return CartItem.objects.filter(user=user, class_booking__isnull=True, payment_status='completed')
-        else:
-            # For learners, return all completed CartItem records.
-            return CartItem.objects.filter(user=user, payment_status='completed')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        user = self.request.user
-        now = timezone.now()
-        history = []
-        purchased_class_ids = []  # For learners: list of purchased class IDs
-
-        if user.role == 'instructor':
-            for cart_item in self.get_queryset():
-                activation_date = cart_item.created_at
-                expiry_date = activation_date + datetime.timedelta(days=365)
-                history.append({
-                    'cart_item': cart_item,
-                    'activation_date': activation_date,
-                    'expiry_date': expiry_date,
-                    'status': getattr(user, 'instructor_status', 'N/A'),
-                })
-        else:
-            for cart_item in self.get_queryset():
-                purchase_date = cart_item.created_at
-                expiry_date = purchase_date + datetime.timedelta(days=365)
-                is_expired = now > expiry_date
-                history.append({
-                    'cart_item': cart_item,
-                    'purchase_date': purchase_date,
-                    'expiry_date': expiry_date,
-                    'is_expired': is_expired,
-                    'join_url': (cart_item.class_booking.get_classroom_url()
-                                 if cart_item.class_booking and hasattr(cart_item.class_booking, 'get_classroom_url')
-                                 else None),
-                })
-                if cart_item.class_booking:
-                    purchased_class_ids.append(cart_item.class_booking.id)
-        context['payment_history'] = history
-        context['purchased_class_ids'] = purchased_class_ids
-        return context
+        # Return all CartItems for the current user, ordered by creation date (newest first)
+        return CartItem.objects.filter(user=self.request.user).order_by('-created_at')

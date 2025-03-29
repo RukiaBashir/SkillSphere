@@ -3,6 +3,8 @@
 {% load static %}
 {% block content %}
 <div class="container my-5">
+
+
     <h2>User Profile</h2>
 
     {% if messages %}
@@ -22,64 +24,39 @@
             <img src="{% static 'avatars/user.png' %}" alt="Default Profile Picture" class="img-fluid rounded-circle" style="max-width: 200px;">
             {% endif %}
         </div>
-        <div class="col-md-8">
-            <h4>Current Information</h4>
-            <p><strong>First Name:</strong> <span class="badge rounded-pill bg-primary">{{ user.first_name }}</span></p>
-            <p><strong>Last Name:</strong> <span class="badge rounded-pill bg-secondary">{{ user.last_name }}</span></p>
-            {% if user.role != 'learner' %}
-            <p><strong>Specialization:</strong> <span class="badge rounded-pill bg-info text-dark">{{ user.specialization }}</span></p>
-            <p><strong>Activation Status:</strong> 
-                <span class="badge rounded-pill {% if user.instructor_status == 'active' %}bg-success{% else %}bg-danger{% endif %}">
-                  {{ user.instructor_status }}
-              </span>
-          </p>
-          {% endif %}
-          <p><strong>Date of Birth:</strong> 
-              <span class="badge rounded-pill bg-light text-dark">
-                  {% if user.birth_date %}
-                  {{ user.birth_date|date:"Y-m-d" }}
-                  {% else %}
-                  Not Provided
-                  {% endif %}
-              </span>
-          </p>
-          <p><strong>Phone Number:</strong> <span class="badge rounded-pill bg-warning text-dark">{{ user.phone_number }}</span></p>
-          <hr>
-          <h4>Edit Your Profile</h4>
-
-          {% if form.non_field_errors %}
-          <div class="alert alert-danger">
-            {{ form.non_field_errors }}
-        </div>
-        {% endif %}
-
-        <form id="updateProfileForm" method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            {{ form|crispy }}
-            <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#confirmUpdateModal">
+           
+    <h4>Edit Your Profile</h4>
+    <form id="updateProfileForm" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <div class="d-flex align-items-center">
+            <button type="button" id="requestOTPButton" class="btn btn-outline-info me-2">Request OTP</button>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmUpdateModal">
                 Update Profile
             </button>
-        </form>
+        </div>
+    </form>
+
+    <!-- Confirm Update Modal -->
+    <div class="modal fade" id="confirmUpdateModal" tabindex="-1" aria-labelledby="confirmUpdateModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+       <div class="modal-content">
+           <div class="modal-header">
+               <h5 class="modal-title" id="confirmUpdateModalLabel">Confirm Update</h5>
+               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+           </div>
+           <div class="modal-body">
+               Are you sure you want to update your profile with these changes?
+           </div>
+           <div class="modal-footer">
+               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+               <button type="button" id="confirmUpdateButton" class="btn btn-primary">Yes, Update</button>
+           </div>
+       </div>
+      </div>
     </div>
 </div>
 
-<div class="modal fade" id="confirmUpdateModal" tabindex="-1" aria-labelledby="confirmUpdateModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-   <div class="modal-content">
-       <div class="modal-header">
-           <h5 class="modal-title" id="confirmUpdateModalLabel">Confirm Update</h5>
-           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-       </div>
-       <div class="modal-body">
-           Are you sure you want to update your profile with these changes?
-       </div>
-       <div class="modal-footer">
-           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-           <button type="button" id="confirmUpdateButton" class="btn btn-primary">Yes, Update</button>
-       </div>
-   </div>
-</div>
-</div>
 
 {% if user.role == "instructor" %}
 <h3 class="mt-5">Your Classes</h3>
@@ -108,8 +85,20 @@
 </div>
 
 <script>
-    document.getElementById('confirmUpdateButton').addEventListener('click', function(){
-        document.getElementById('updateProfileForm').submit();
+document.getElementById('confirmUpdateButton').addEventListener('click', function(){
+    document.getElementById('updateProfileForm').submit();
+});
+
+// AJAX request to trigger OTP sending
+document.getElementById('requestOTPButton').addEventListener('click', function(){
+    fetch("{% url 'accounts:request-otp' %}")
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+    })
+    .catch(error => {
+        alert("Error sending OTP: " + error);
     });
+});
 </script>
 {% endblock %}

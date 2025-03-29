@@ -3,69 +3,136 @@
 
 {% block content %}
 <div class="container my-5">
-    <h2 class="mb-4">My Enrolled/Purchased Classes</h2>
-
     {% if request.user.role == "instructor" %}
-        <h4>Classes You Teach</h4>
-        {% for class_obj in request.user.class_set.all %}
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5>{{ class_obj.title }}</h5>
-                </div>
-                <div class="card-body">
-                    {% with class_obj.enrollments.all as enrollments %}
-                        {% if enrollments %}
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Learner</th>
-                                        <th>Learning Stage</th>
-                                        <th>Update Progress</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for enrollment in enrollments %}
-                                        <tr>
-                                            <td>{{ enrollment.learner.get_full_name }}</td>
-                                            <td>{{ enrollment.get_learning_stage_display }}</td>
-                                            <td>
-                                                <form method="POST" action="{% url 'classes:update_learning_stage' enrollment.id %}">
-                                                    {% csrf_token %}
-                                                    <select name="learning_stage" class="form-select form-select-sm">
-                                                        <option value="Beginner" {% if enrollment.learning_stage == "Beginner" %}selected{% endif %}>Beginner</option>
-                                                        <option value="Intermediate" {% if enrollment.learning_stage == "Intermediate" %}selected{% endif %}>Intermediate</option>
-                                                        <option value="Expert" {% if enrollment.learning_stage == "Expert" %}selected{% endif %}>Expert</option>
-                                                    </select>
-                                                    <button type="submit" class="btn btn-primary btn-sm mt-2">Update</button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        {% else %}
-                            <p class="text-muted">No enrolled students yet.</p>
-                        {% endif %}
-                    {% endwith %}
-                </div>
-            </div>
-        {% endfor %}
+    <h4>Classes You Teach</h4>
+    {% for class_obj in request.user.class_set.all %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5>{{ class_obj.title }}</h5>
+        </div>
+        <div class="card-body">
+            {% with class_obj.enrollments.all as enrollments %}
+            {% if enrollments %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Learner</th>
+                        <th>Learning Stage</th>
+                        <th>Update Progress</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for enrollment in enrollments %}
+                    <tr>
+                        <td>{{ enrollment.learner.get_full_name }}</td>
+
+                        <td>{{ enrollment.get_learning_stage_display }}</td>
+
+                        <td>
+                            <form method="POST" action="{% url 'classes:update_learning_stage' enrollment.id %}">
+                                {% csrf_token %}
+
+                                <select name="learning_stage" class="form-select form-select-sm mb-2">
+                                    <option value="Beginner" {% if enrollment.learning_stage == "Beginner" %}selected{% endif %}>Beginner</option>
+                                    <option value="Intermediate" {% if enrollment.learning_stage == "Intermediate" %}selected{% endif %}>Intermediate</option>
+                                    <option value="Expert" {% if enrollment.learning_stage == "Expert" %}selected{% endif %}>Expert</option>
+                                </select>
+
+                                <div class="mb-3">
+                                    <label for="progressRange{{ enrollment.id }}" class="form-label">Progress: <span id="progressValue{{ enrollment.id }}">{{ enrollment.progress }}</span>%</label>
+                                    <input type="range" class="form-range" name="progress" id="progressRange{{ enrollment.id }}" min="0" max="100" step="1" value="{{ enrollment.progress }}" oninput="updateProgress({{ enrollment.id }})">
+                                </div>
+
+                                <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% else %}
+            <p class="text-muted">No enrolled students yet.</p>
+            {% endif %}
+            {% endwith %}
+        </div>
+    </div>
+    {% endfor %}
+
     {% elif request.user.role == "learner" %}
-        <h4>My Purchased Classes</h4>
+    <h4>My Enrolled Classes</h4>
+
+    {% if enrollments %}
         <div class="row">
             {% for enrollment in enrollments %}
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ enrollment.class_obj.title }}</h5>
-                            <p class="card-text">Current Progress: <strong>{{ enrollment.get_learning_stage_display }}</strong></p>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm 
+                {% if enrollment.learning_stage == 'Beginner' %} bg-primary text-white
+                {% elif enrollment.learning_stage == 'Intermediate' %} bg-success text-white
+                {% elif enrollment.learning_stage == 'Expert' %} bg-warning text-dark
+                {% else %} bg-light text-dark {% endif %}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ enrollment.class_obj.title }}</h5>
+                        <p class="card-text">Learning Stage: <strong>{{ enrollment.get_learning_stage_display }}</strong></p>
+                        <p class="card-text">Progress: {{ enrollment.progress }}%</p>
+
+                        {% with progress=enrollment.progress %}
+                        <div class="spinner-border 
+                            {% if progress == 100 %} text-dark
+                            {% elif progress >= 81 %} text-success
+                            {% elif progress >= 61 %} text-primary
+                            {% elif progress >= 41 %} text-info
+                            {% elif progress >= 21 %} text-warning
+                            {% else %} text-danger {% endif %}" role="status">
+                            <span class="visually-hidden">{{ progress }}% Complete</span>
                         </div>
+
+                        <p class="mt-2">
+                            {% if progress == 100 %} 🎓 Completed!
+                            {% elif progress >= 81 %} ✅ Almost Done (81-99%)
+                            {% elif progress >= 61 %} 📘 Advanced (61-80%)
+                            {% elif progress >= 41 %} 📊 Intermediate (41-60%)
+                            {% elif progress >= 21 %} ⚠️ Beginner (21-40%)
+                            {% else %} 🚨 Just Started (0-20%)
+                            {% endif %}
+                        </p>
+                        {% endwith %}
                     </div>
                 </div>
+            </div>
             {% endfor %}
         </div>
     {% else %}
         <p>You are not enrolled in any classes yet.</p>
     {% endif %}
-</div>
+
+{% else %}
+    <p>You are not a learner.</p>
+{% endif %}
+
 {% endblock %}
+
+<script>
+    function updateProgress(id) {
+        const rangeInput = document.getElementById(`progressRange${id}`);
+        const progressValue = document.getElementById(`progressValue${id}`);
+        progressValue.textContent = rangeInput.value;
+    }
+</script>
+<script>
+    // Update progress display when range is adjusted
+    function updateProgress(id) {
+        const progressValue = document.getElementById(`progressRange${id}`).value;
+        document.getElementById(`progressValue${id}`).textContent = progressValue;
+    }
+
+    // Reset progress to 0% when learning stage is changed
+    function resetProgress(id) {
+        const progressRange = document.getElementById(`progressRange${id}`);
+        const progressValue = document.getElementById(`progressValue${id}`);
+        
+        progressRange.value = 0;  // Reset range to 0%
+        progressValue.textContent = 0;  // Update displayed value
+    }
+</script>

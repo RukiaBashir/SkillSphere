@@ -1,7 +1,6 @@
 from django.urls import path
 from . import views
-from .forms import SkillCategoryUpdateView
-from .views import SkillCategoryDeleteView, ClassDeleteView
+from .views import SkillCategoryDeleteView, ClassDeleteView, SkillCategoryUpdateView
 
 app_name = 'classes'
 
@@ -35,6 +34,4 @@ urlpatterns = [
     # List enrollments (for managing enrollments)
     path('enrollments/', views.enrollment_list, name='enrollment-list'),
     path('enrollment/<int:enrollment_id>/update/', views.update_learning_stage, name='update_learning_stage'),
-
-
 ]

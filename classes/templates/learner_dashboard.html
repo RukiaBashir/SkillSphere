@@ -1,126 +1,39 @@
-{% extends "user_base.html" %}
+{% extends "classes_base.html" %}
 {% load static %}
-{% load crispy_forms_tags %}
-
 {% block content %}
-<!-- START Carousel Section -->
-<div id="myCarousel" class="carousel slide" data-bs-ride="carousel">
-  <div class="carousel-indicators">
-    {% for class_obj in classes %}
-      <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="{{ forloop.counter0 }}"
-        {% if forloop.first %}class="active" aria-current="true"{% endif %}
-        aria-label="Slide {{ forloop.counter }}"></button>
-    {% endfor %}
-  </div>
-  <div class="carousel-inner">
-    {% for class_obj in classes %}
-      <div class="carousel-item {% if forloop.first %}active{% endif %}">
-        {% if class_obj.image %}
-          <img src="{{ class_obj.image.url }}" class="d-block w-100" alt="{{ class_obj.title }}"
-               style="height: 500px; object-fit: cover;">
-        {% else %}
-          <svg class="bd-placeholder-img d-block w-100" width="100%" height="500"
-               xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false">
-            <rect width="100%" height="100%" fill="#777"/>
-          </svg>
-        {% endif %}
-        <div class="container">
-          <div class="carousel-caption {% if forloop.first %}text-start{% else %}text-end{% endif %}">
-            <h1>{{ class_obj.title }}</h1>
-            <p>{{ class_obj.description|truncatewords:20 }}</p>
-            {% comment %} 
-              For the carousel, we assume the “View Class” action is available
-              (full details are visible in the class detail page after payment).
-            {% endcomment %}
-            <p>
-              <a class="btn btn-lg btn-primary" href="{{ class_obj.get_absolute_url }}">View Class</a>
-            </p>
-          </div>
-        </div>
-      </div>
-    {% endfor %}
-  </div>
-  <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
-    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Previous</span>
-  </button>
-  <button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
-    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Next</span>
-  </button>
-</div>
-<!-- Carousel Section END -->
-
 <div class="container my-5">
-  <h2 class="mb-4">Available Classes</h2>
+  <h1 class="mb-4">Learner Dashboard</h1>
   <div class="row">
-    {% for class_obj in classes %}
-      <div class="col-md-4">
-        <div class="card mb-4 shadow-sm">
-          {% if class_obj.image %}
-            <img src="{{ class_obj.image.url }}" class="card-img-top" alt="{{ class_obj.title }}" style="height: 200px; object-fit: cover;">
-          {% else %}
-            <div class="card-img-top bg-secondary" style="height:200px;"></div>
-          {% endif %}
-          <div class="card-body">
-            <h5 class="card-title">{{ class_obj.title }}</h5>
-            <p class="card-text">{{ class_obj.description|truncatewords:20 }}</p>
-            {% if request.user.is_authenticated and request.user.role == "learner" %}
-              {% if class_obj in purchased_classes %}
-                <!-- Show full booking details when purchased -->
-                <p><strong>Sessions:</strong> {{ class_obj.sessions.count }}</p>
-                <p><strong>Learners:</strong> {{ class_obj.enrollments.count }}</p>
-              {% else %}
-                <!-- Hide details until purchase -->
-                <p class="text-muted"><em>Book now to view session and enrollment details.</em></p>
-              {% endif %}
-            {% else %}
-              <!-- For instructors or anonymous users, show all details -->
-              <p><strong>Sessions:</strong> {{ class_obj.sessions.count }}</p>
-              <p><strong>Learners:</strong> {{ class_obj.enrollments.count }}</p>
-            {% endif %}
-            <div>
-              <span class="text-warning">&#9733;</span>
-              <span class="text-warning">&#9733;</span>
-              <span class="text-warning">&#9733;</span>
-              <span class="text-warning">&#9734;</span>
-              <span class="text-warning">&#9734;</span> (3.0)
-            </div>
-            <p class="card-text"><strong>Price: KES {{ class_obj.price }}</strong></p>
-
-            {% if request.user.is_authenticated and request.user.role == "learner" %}
-              {% if class_obj in purchased_classes %}
-                {% with active_session=class_obj.get_live_session %}
-                  {% if active_session and active_session.is_live %}
-                    <a href="{% url 'classes:classroom' active_session.pk %}" class="btn btn-success">
-                      Join Class (Session: {{ active_session.session_id }})
-                    </a>
-                  {% else %}
-                    <button class="btn btn-secondary disabled" title="No active session available">
-                      Class Not Active
-                    </button>
-                  {% endif %}
-                {% endwith %}
-              {% else %}
-                <form action="{% url 'payments:add-to-cart' class_obj.pk %}" method="post">
-                  {% csrf_token %}
-                  <button type="submit" class="btn btn-primary">Add to Cart</button>
-                </form>
-              {% endif %}
-            {% elif request.user.is_authenticated and request.user.role == "instructor" %}
-              <!-- Instructors see a View Class button -->
-              <a href="{{ class_obj.get_absolute_url }}" class="btn btn-secondary">View Class</a>
-            {% else %}
-              <a href="{% url 'accounts:login' %}" class="btn btn-primary">Login to Book</a>
-            {% endif %}
-          </div>
+    <div class="col-md-6">
+      <h3>Notifications</h3>
+      {% if notifications %}
+        <ul class="list-group">
+          {% for notification in notifications %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              {{ notification.message }}
+              <span class="badge bg-secondary">{{ notification.created_at|date:"M d, Y" }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p>No new notifications.</p>
+      {% endif %}
+    </div>
+    <div class="col-md-6">
+      <h3>Your Courses</h3>
+      {% if enrollments %}
+        <div class="list-group">
+          {% for enrollment in enrollments %}
+            <a href="{% url 'classes:class-detail' enrollment.class_obj.pk %}" class="list-group-item list-group-item-action">
+              {{ enrollment.class_obj.title }}
+              <span class="badge bg-info">{{ enrollment.get_learning_stage_display }}</span>
+            </a>
+          {% endfor %}
         </div>
-      </div>
-    {% empty %}
-      <div class="col-12">
-        <p>No classes available at the moment.</p>
-      </div>
-    {% endfor %}
+      {% else %}
+        <p>You haven't purchased any classes yet.</p>
+      {% endif %}
+    </div>
   </div>
 </div>
 {% endblock %}

@@ -1,0 +1,58 @@
+{% extends "classes_base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load l10n %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container my-5">
+  <h1 class="mb-4">Payment History</h1>
+   {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-dismissible fade show {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %}" role="alert">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+  {% if transactions %}
+    <table class="table table-bordered table-hover">
+      <thead class="table-light">
+        <tr>
+          <th>Date</th>
+          <th>Transaction Type</th>
+          <th>Amount (KES)</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for transaction in transactions %}
+          <tr>
+            <td>{{ transaction.created_at|date:"M d, Y H:i" }}</td>
+            <td>
+              {% if transaction.class_booking %}
+                {{ transaction.class_booking.title }}
+              {% else %}
+                Instructor Registration Fee
+              {% endif %}
+            </td>
+            <td>{{ transaction.amount }}</td>
+            <td>
+              {% if transaction.payment_status == "completed" %}
+                <span class="badge bg-success">Completed</span>
+              {% elif transaction.payment_status == "failed" %}
+                <span class="badge bg-danger">Failed</span>
+              {% elif transaction.payment_status == "processing" %}
+                <span class="badge bg-info">Processing</span>
+              {% else %}
+                <span class="badge bg-warning text-dark">{{ transaction.payment_status|capfirst }}</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No transactions found.</p>
+  {% endif %}
+</div>
+{% endblock %}

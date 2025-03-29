@@ -1,0 +1,145 @@
+{% extends "classes_base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+  <h1 class="mb-4">Admin Dashboard</h1>
+
+  <!-- User Statistics -->
+  <div class="row">
+    <div class="col-md-3">
+      <div class="card text-center bg-primary text-white mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Total Users</h5>
+          <p class="card-text display-4">{{ total_users }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card text-center bg-success text-white mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Instructors (Active)</h5>
+          <p class="card-text display-4">{{ total_active_instructors }}/{{ total_instructors }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card text-center bg-warning text-dark mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Learners</h5>
+          <p class="card-text display-4">{{ total_learners }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3">
+      <div class="card text-center bg-danger text-white mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Pending Approvals</h5>
+          <p class="card-text display-4">{{ pending_classes }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Class Statistics -->
+  <h2 class="mt-5">Class Statistics</h2>
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card text-center bg-info text-white mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Total Classes</h5>
+          <p class="card-text display-4">{{ total_classes }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card text-center bg-success text-white mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Approved Classes</h5>
+          <p class="card-text display-4">{{ approved_classes }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card text-center bg-warning text-dark mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Ongoing Classes</h5>
+          <p class="card-text display-4">{{ ongoing_classes }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enrollment Statistics -->
+  <h2 class="mt-5">Enrollment Statistics</h2>
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card text-center bg-primary text-white mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Total Enrollments</h5>
+          <p class="card-text display-4">{{ total_enrollments }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card text-center bg-success text-white mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Paid Enrollments</h5>
+          <p class="card-text display-4">{{ paid_enrollments }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card text-center bg-info text-white mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Booked Enrollments</h5>
+          <p class="card-text display-4">{{ booked_enrollments }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order & Revenue -->
+  <h2 class="mt-5">Order & Revenue</h2>
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card text-center bg-success text-white mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Total Orders</h5>
+          <p class="card-text display-4">{{ total_orders }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card text-center bg-info text-white mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Total Revenue (KES)</h5>
+          <p class="card-text display-4">{{ total_revenue }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feedback Statistics -->
+  <h2 class="mt-5">Feedback Statistics</h2>
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card text-center bg-dark text-white mb-3">
+        <div class="card-body">
+          <h5 class="card-title">Total Feedbacks</h5>
+          <p class="card-text display-4">{{ total_feedbacks }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

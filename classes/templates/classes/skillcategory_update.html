@@ -1,0 +1,15 @@
+{% extends "../classes_base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="container my-5">
+  <h2>Update Skill Category</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <div class="mt-3">
+      <button type="submit" class="btn btn-primary">Update Category</button>
+      <a href="{% url 'classes:skillcategory-list' %}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

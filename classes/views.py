@@ -1,13 +1,16 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
-from django.views.generic import DeleteView
+from django.utils.timezone import now
+from django.views.generic import DeleteView, UpdateView
 
 from payments.models import CartItem
 from .forms import ClassForm, SkillCategoryForm
 from .models import Class, SkillCategory, Enrollment
+
 
 
 def class_list(request):
@@ -88,9 +91,11 @@ def class_create(request):
         form = ClassForm()
 
     return render(request, 'class_form.html', {'form': form})
+
+
 class ClassDeleteView(LoginRequiredMixin, DeleteView):
     model = Class
-    template_name = 'classes/class_confirm_delete.html'
+    template_name = 'class_confirm_delete.html'
     success_url = reverse_lazy('classes:class-list')
 
     def get_queryset(self):
@@ -119,16 +124,40 @@ def class_update(request, pk):
 
 
 # Instructor dashboard to manage classes
+
+
 @login_required
 def dashboard(request):
     if request.user.role != 'instructor':
         messages.error(request, "Access restricted to instructors only.")
         return redirect('classes:class-list')
 
-    # List only classes created by the instructor
+    # Retrieve all classes created by the instructor.
     classes_created = Class.objects.filter(instructor=request.user)
+
+    # Summary statistics:
+    total_classes = classes_created.count()
+    ongoing_classes = classes_created.filter(status='ongoing').count()  # Assumes Class.status exists
+    coming_soon_classes = classes_created.filter(status='coming_soon').count()  # Assumes status field
+    learners_count = CartItem.objects.filter(
+        class_booking__in=classes_created,
+        payment_status='completed'
+    ).values('user').distinct().count()
+
+    # Check if the instructor has completed the registration fee.
+    instructor_paid = CartItem.objects.filter(
+        user=request.user,
+        class_booking__isnull=True,
+        payment_status='completed'
+    ).exists()
+
     context = {
         'classes_created': classes_created,
+        'total_classes': total_classes,
+        'ongoing_classes': ongoing_classes,
+        'coming_soon_classes': coming_soon_classes,
+        'learners_count': learners_count,
+        'instructor_paid': instructor_paid,
     }
     return render(request, 'classes/dashboard.html', context)
 
@@ -136,26 +165,45 @@ def dashboard(request):
 # List of skill categories
 def skillcategory_list(request):
     categories = SkillCategory.objects.all()
+
+    # Pass additional info to each category for permission checks in the template.
+    for category in categories:
+        category.can_edit = (
+                request.user.is_authenticated and
+                request.user.role == 'instructor' and
+                category.created_by == request.user
+        )
+        # This assumes your related model (e.g. Class) uses related_name='classes'
+        category.has_classes = category.classes.exists()
+
     return render(request, 'skillcategory_list.html', {'categories': categories})
 
 
 # Create a new skill category (for instructors only)
-@login_required
 def skillcategory_create(request):
-    if request.user.role != 'instructor':
-        messages.error(request, "You are not authorized to create a skill category.")
-        return redirect('classes:skillcategory-list')
-
     if request.method == 'POST':
-        form = SkillCategoryForm(request.POST)
+        form = SkillCategoryForm(request.POST, user=request.user)
         if form.is_valid():
             form.save()
-            messages.success(request, "Skill category created successfully.")
             return redirect('classes:skillcategory-list')
     else:
-        form = SkillCategoryForm()
+        form = SkillCategoryForm(user=request.user)
 
     return render(request, 'skillcategory_form.html', {'form': form})
+
+
+class SkillCategoryUpdateView(LoginRequiredMixin, UpdateView):
+    model = SkillCategory
+    form_class = SkillCategoryForm
+    template_name = 'classes/skillcategory_update.html'
+    success_url = reverse_lazy('classes:skillcategory-list')
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        # Only allow instructors to edit categories they created.
+        if self.request.user.role == 'instructor':
+            return qs.filter(created_by=self.request.user)
+        return qs.none()
 
 
 class SkillCategoryDeleteView(LoginRequiredMixin, DeleteView):
@@ -163,19 +211,27 @@ class SkillCategoryDeleteView(LoginRequiredMixin, DeleteView):
     template_name = 'classes/skillcategory_confirm_delete.html'
     success_url = reverse_lazy('classes:skillcategory-list')
 
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if self.object.has_classes():
+            messages.error(request, "Cannot delete this category because it has associated classes.")
+            return redirect(self.success_url)
+        return super().delete(request, *args, **kwargs)
+
 
 # List enrollments (for managing enrollments)
 @login_required
 def enrollment_list(request):
+    enrollments = Enrollment.objects.none()
+
     if request.user.role == 'instructor':
-        # Get classes created by the instructor
+        # Get classes created by the instructor and associated enrollments
         classes_taught = Class.objects.filter(instructor=request.user)
-        enrollments = Enrollment.objects.filter(class_obj__in=classes_taught).select_related('learner')
+        enrollments = Enrollment.objects.filter(class_obj__in=classes_taught).select_related('learner', 'class_obj')
+
     elif request.user.role == 'learner':
-        # Show only paid enrollments for learners
-        enrollments = Enrollment.objects.filter(learner=request.user, is_paid=True)
-    else:
-        enrollments = Enrollment.objects.none()
+        # Display only paid enrollments for learners
+        enrollments = Enrollment.objects.filter(learner=request.user, is_paid=True).select_related('class_obj')
 
     return render(request, 'classes/enrollment_list.html', {'enrollments': enrollments})
 
@@ -184,11 +240,28 @@ def enrollment_list(request):
 def update_learning_stage(request, enrollment_id):
     if request.method == "POST" and request.user.role == "instructor":
         enrollment = get_object_or_404(Enrollment, id=enrollment_id, class_obj__instructor=request.user)
+
+        # Update learning stage
         new_stage = request.POST.get("learning_stage")
         if new_stage in dict(Enrollment.LEARNING_STAGE_CHOICES):
             enrollment.learning_stage = new_stage
-            enrollment.save()
-            messages.success(request, "Learner's progress updated successfully.")
         else:
             messages.error(request, "Invalid learning stage.")
-    return redirect("classes:enrollment_list")
+            return redirect("classes:enrollment-list")
+
+        # Update progress and ensure it's within a valid range
+        try:
+            new_progress = int(request.POST.get("progress", enrollment.progress))
+            if 0 <= new_progress <= 100:
+                enrollment.progress = new_progress
+            else:
+                messages.error(request, "Invalid progress value. Must be between 0 and 100.")
+                return redirect("classes:enrollment-list")
+        except (ValueError, TypeError):
+            messages.error(request, "Progress must be a valid number.")
+            return redirect("classes:enrollment-list")
+
+        enrollment.save()
+        messages.success(request, "Learner's progress updated successfully.")
+
+    return redirect("classes:enrollment-list")
