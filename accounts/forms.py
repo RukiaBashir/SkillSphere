@@ -207,6 +207,8 @@ class OTPForm(forms.Form):
             'placeholder': 'Enter OTP'
         })
     )
+
+
 class OTPFormPassword(forms.Form):
     otp = forms.CharField(
         label='Enter OTP',

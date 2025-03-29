@@ -145,34 +145,34 @@ def logout_view(request):
 
 def forgot_password(request):
     """
-    Sends OTP via email or Twilio for password reset.
+    Sends OTP via email (and optionally via Twilio) for password reset.
     """
     if request.method == 'POST':
         form = PasswordResetForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data['email']
 
-            # Check if user with provided email exists
+            # Ensure a valid, active user exists
             try:
                 user = SkillUser.objects.get(email=email, is_active=True)
             except SkillUser.DoesNotExist:
                 messages.error(request, "No active user found with that email.")
                 return redirect('accounts:forgot-password')
 
-            # Generate OTP and store it in the session
+            # Generate OTP and store it in session
             otp = random.randint(100000, 999999)
             request.session['user_id'] = user.id
             request.session['otp'] = otp
 
-            # Send OTP via email
+            # Send OTP via email; pass OTP in context for email template
             form.save(
                 request=request,
                 email_template_name='users/password_reset_email.html',
                 subject_template_name='users/password_reset_subject.txt',
-                extra_email_context={'otp': otp}  # Pass the OTP to the email context
+                extra_email_context={'otp': otp}
             )
 
-            # Send OTP via Twilio (if phone_number exists)
+            # Optionally send OTP via Twilio if phone_number exists
             if user.phone_number:
                 try:
                     client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
@@ -180,9 +180,9 @@ def forgot_password(request):
                         .verifications.create(to=user.phone_number, channel="sms")
                 except TwilioRestException as e:
                     print(f"Twilio Error: {e}")
-                    messages.warning(request, "Failed to send OTP via SMS. Check phone number or Twilio settings.")
+                    messages.warning(request,
+                                     "Failed to send OTP via SMS. Please check your phone number or Twilio settings.")
 
-            # Notify user and redirect to OTP verification
             messages.success(request, 'An OTP has been sent to your email and phone (if provided).')
             return redirect('accounts:verify_otp_password')
     else:
@@ -194,15 +194,12 @@ def forgot_password(request):
 def verify_otp_password(request):
     """
     Verifies OTP for password reset.
-    Supports email and Twilio OTP verification.
+    If valid, stores a verified user in the session and redirects to the set new password page.
     """
     if request.method == 'POST':
         form = OTPFormPassword(request.POST)
         if form.is_valid():
             otp_entered = form.cleaned_data.get('otp')
-            valid = False
-
-            # Get session variables
             session_otp = request.session.get('otp')
             user_id = request.session.get('user_id')
 
@@ -211,12 +208,13 @@ def verify_otp_password(request):
                 return redirect('accounts:forgot-password')
 
             user = get_object_or_404(SkillUser, id=user_id)
+            valid = False
 
-            # Validate OTP (Email OTP check)
+            # Check OTP sent via email
             if session_otp and str(otp_entered) == str(session_otp):
                 valid = True
             else:
-                # Validate Twilio OTP if phone_number exists
+                # If email OTP doesn't match, try Twilio Verify if phone number exists
                 if user.phone_number:
                     try:
                         client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
@@ -228,12 +226,11 @@ def verify_otp_password(request):
                         print(f"Twilio Verification Error: {e}")
 
             if valid:
-                # Store verified user for password reset
+                # Mark the user as verified for password reset
                 request.session['verified_user_id'] = user.id
                 return redirect('accounts:set_new_password')
             else:
                 messages.error(request, "Invalid OTP. Please try again.")
-
     else:
         form = OTPFormPassword()
 
@@ -316,11 +313,11 @@ def verify_otp(request):
                 user.is_active = True
                 user.save()
 
-                # Log in user
+                # Log in the user
                 login(request, user)
                 messages.success(request, "Your account has been activated!")
 
-                # Redirect based on role
+                # Redirect based on user role
                 if user.role == 'instructor':
                     return redirect('accounts:instructor-dashboard')
                 else:
@@ -462,6 +459,7 @@ class InstructorDashboardView(LoginRequiredMixin, TemplateView):
         ).exists()
 
         return context
+
 
 class AdminDashboardView(LoginRequiredMixin, TemplateView):
     template_name = "admin_dashboard.html"
