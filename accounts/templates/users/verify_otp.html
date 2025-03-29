@@ -3,6 +3,13 @@
 {% block content %}
 <div class="container my-5">
     <h2>Verify OTP</h2>
+      {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-dismissible fade show {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %}" role="alert">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
     <p>Please enter the OTP sent to your email/phone.</p>
     <form method="post">
         {% csrf_token %}

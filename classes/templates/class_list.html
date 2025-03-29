@@ -4,9 +4,62 @@
 {% load l10n %}
 
 {% block content %}
+<h2 class="my-0">Available Classes</h2>
+<!-- START Carousel Section -->
+<!-- START Carousel Section -->
+<div id="myCarousel" class="carousel slide" data-bs-ride="carousel">
+  <div class="carousel-indicators">
+    {% for class_obj in classes %}
+      <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="{{ forloop.counter0 }}"
+        {% if forloop.first %}class="active" aria-current="true"{% endif %}
+        aria-label="Slide {{ forloop.counter }}"></button>
+    {% endfor %}
+  </div>
+  <div class="carousel-inner">
+    {% for class_obj in classes %}
+      <div class="carousel-item {% if forloop.first %}active{% endif %}">
+        {% if class_obj.image %}
+          <img src="{{ class_obj.image.url }}" class="d-block w-100" alt="{{ class_obj.title }}"
+               style="height: 500px; object-fit: cover;">
+        {% else %}
+          <svg class="bd-placeholder-img d-block w-100" width="100%" height="500"
+               xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false">
+            <rect width="100%" height="100%" fill="#777"/>
+          </svg>
+        {% endif %}
+        <div class="container">
+          <div class="carousel-caption {% if forloop.first %}text-start{% else %}text-end{% endif %}" 
+               style="text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);">
+            <h1>{{ class_obj.title }}</h1>
+            <p>{{ class_obj.description|truncatewords:20 }}</p>
+            {% if class_obj.id %}
+    <p>
+        <a class="btn btn-lg btn-primary" href="{% url 'classes:class-detail' class_obj.id %}">View Class</a>
+    </p>
+{% else %}
+    <p>Class not available.</p>
+{% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Previous</span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Next</span>
+  </button>
+</div>
+<!-- Carousel Section END -->
+
+<!-- Carousel Section END -->
+
 <div class="container marketing my-5">
   <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="my-0">Available Classes</h2>
+    
     {% if request.user.is_authenticated and request.user.role == 'instructor' %}
       <a href="{% url 'classes:class-create' %}" class="btn btn-primary">Create New Class</a>
     {% endif %}

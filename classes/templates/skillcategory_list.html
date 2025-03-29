@@ -3,15 +3,15 @@
 {% block content %}
 <div class="container mt-5">
   <h1 class="mb-4">Skill Categories</h1>
-  
-  {% if user.role != 'learner' %}
+
+  {% if user.is_authenticated and user.role != 'learner' %}
   <div class="mb-3">
     <a href="{% url 'classes:skillcategory-create' %}" class="btn btn-success">
       <i class="fas fa-plus"></i> Add New Category
     </a>
   </div>
   {% endif %}
-  
+
   {% if categories %}
     <div class="row">
       {% for category in categories %}
@@ -21,20 +21,27 @@
             <h5 class="card-title">{{ category.name }}</h5>
             <p class="card-text">{{ category.description }}</p>
           </div>
-          {% if user.role != 'learner' %}
+
+          {% if user.is_authenticated and user.role == 'instructor' and category.created_by == user %}
           <div class="card-footer d-flex justify-content-between bg-transparent border-0">
             <a href="{% url 'classes:skillcategory-update' category.id %}" class="btn btn-primary btn-sm">
               <i class="fas fa-edit"></i> Edit
             </a>
+
+            {% if not category.classes.exists %}
             <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ category.id }}">
               <i class="fas fa-trash"></i> Delete
             </button>
+            {% else %}
+            <button class="btn btn-secondary btn-sm" disabled>
+              <i class="fas fa-ban"></i> Cannot Delete
+            </button>
+            {% endif %}
           </div>
           {% endif %}
         </div>
       </div>
-      
-      {% if user.role != 'learner' %}
+
       <!-- Delete Confirmation Modal -->
       <div class="modal fade" id="deleteModal{{ category.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ category.id }}" aria-hidden="true">
         <div class="modal-dialog">
@@ -56,8 +63,6 @@
           </div>
         </div>
       </div>
-      {% endif %}
-      
       {% endfor %}
     </div>
   {% else %}

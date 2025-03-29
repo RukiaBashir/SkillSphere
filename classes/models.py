@@ -7,12 +7,24 @@ from accounts.models import SkillUser
 class SkillCategory(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
+    created_by = models.ForeignKey(SkillUser, on_delete=models.CASCADE, related_name='skill_categories')
 
     def __str__(self):
         return self.name
 
+    def has_classes(self):
+        # This method checks if there are any related Class objects.
+        # Make sure your related Class model defines:
+        # category = models.ForeignKey(SkillCategory, on_delete=models.CASCADE, related_name='classes')
+        return self.classes.exists()
+
 
 class Class(models.Model):
+    STATUS_CHOICES = [
+        ('coming_soon', 'Coming Soon'),
+        ('ongoing', 'Ongoing'),
+        ('completed', 'Completed'),
+    ]
     title = models.CharField(max_length=200)
     description = models.TextField()
     price = models.DecimalField(max_digits=8, decimal_places=2)
@@ -20,10 +32,24 @@ class Class(models.Model):
     schedule = models.DateTimeField()
     venue_address = models.CharField(max_length=255, blank=True, null=True)
     instructor = models.ForeignKey(SkillUser, on_delete=models.CASCADE, limit_choices_to={'role': 'instructor'})
-    category = models.ForeignKey(SkillCategory, on_delete=models.SET_NULL, null=True, blank=True)
+    category = models.ForeignKey(SkillCategory, on_delete=models.SET_NULL, null=True, blank=True, related_name='classes')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='coming_soon')
+    is_approved = models.BooleanField(default=False)  # For pending course approvals
+    is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.title
+
+    def update_status(self):
+        """Update status based on the schedule and is_active."""
+        if self.schedule > now():
+            self.status = 'coming_soon'
+        elif self.schedule <= now() and self.is_active:
+            self.status = 'ongoing'
+        else:
+            self.status = 'completed'
+        self.save(update_fields=['status'])
+
 
 
 class Enrollment(models.Model):
@@ -52,6 +78,7 @@ class Enrollment(models.Model):
     paid_at = models.DateTimeField(null=True, blank=True)
     is_booked = models.BooleanField(default=False)
     booked_at = models.DateTimeField(null=True, blank=True)
+    progress = models.PositiveIntegerField(default=0)
 
     # New field for learning progress
     learning_stage = models.CharField(

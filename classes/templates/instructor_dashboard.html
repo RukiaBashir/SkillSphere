@@ -1,104 +1,91 @@
 {% extends "classes_base.html" %}
 {% load static %}
 {% block content %}
-{% if user.role == "instructor" %}
 <div class="container my-5">
   <h1 class="mb-4">Instructor Dashboard</h1>
 
   {% if not instructor_paid %}
     <div class="alert alert-danger">
-      <strong>Instructor Payment Required!</strong> You must complete your instructor registration fee to create classes.
+      <strong>Payment Required:</strong> Please complete your instructor registration fee.
       <a href="{% url 'accounts:become-instructor' %}" class="btn btn-primary btn-sm">Pay Now</a>
     </div>
   {% else %}
     <a href="{% url 'classes:class-create' %}" class="btn btn-success mb-4">Create New Class</a>
   {% endif %}
 
+  <!-- Statistics Cards -->
   <div class="row">
-    <!-- Total Classes Owned -->
     <div class="col-md-3 mb-3">
-      <div class="card text-center">
+      <div class="card text-center bg-light">
         <div class="card-body">
-          <h5 class="card-title">Total Classes Owned</h5>
-          <p class="card-text display-4">{{ total_classes }}</p>
+          <h5 class="card-title">Total Classes</h5>
+          <p class="card-text display-4 text-primary">{{ total_classes }}</p>
         </div>
       </div>
     </div>
-    <!-- Ongoing Classes -->
     <div class="col-md-3 mb-3">
-      <div class="card text-center">
+      <div class="card text-center bg-light">
         <div class="card-body">
           <h5 class="card-title">Ongoing Classes</h5>
-          <p class="card-text display-4">{{ ongoing_classes }}</p>
+          <p class="card-text display-4 text-success">{{ ongoing_classes }}</p>
         </div>
       </div>
     </div>
-    <!-- Coming Soon Classes -->
     <div class="col-md-3 mb-3">
-      <div class="card text-center">
+      <div class="card text-center bg-light">
         <div class="card-body">
-          <h5 class="card-title">Coming Soon Classes</h5>
-          <p class="card-text display-4">{{ coming_soon_classes }}</p>
+          <h5 class="card-title">Coming Soon</h5>
+          <p class="card-text display-4 text-warning">{{ coming_soon_classes }}</p>
         </div>
       </div>
     </div>
-    <!-- Total Learners -->
     <div class="col-md-3 mb-3">
-      <div class="card text-center">
+      <div class="card text-center bg-light">
         <div class="card-body">
-          <h5 class="card-title">Total Learners</h5>
-          <p class="card-text display-4">{{ learners_count }}</p>
+          <h5 class="card-title">Completed Classes</h5>
+          <p class="card-text display-4 text-info">{{ completed_classes }}</p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- All Classes Table -->
-  <div class="mt-5">
-    <h2>All Classes</h2>
-    <table class="table table-hover">
-      <thead>
-        <tr>
-          <th>Class Name</th>
-          <th>Status</th>
-          <th>Instructor</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for class in classes %}
-          <tr>
-            <td>{{ class.title }}</td>
-            <td>
-              {% if class.is_active %}
-                Active
-              {% else %}
-                Inactive
-              {% endif %}
-            </td>
-            <td>{{ class.instructor.get_full_name }}</td>
-            <td>
-              <a href="{% url 'classes:class-detail' class.id %}" class="btn btn-secondary btn-sm">View</a>
-              {% if class.instructor.id == user.id %}
-                <a href="{% url 'classes:class-update' class.id %}" class="btn btn-primary btn-sm">Edit</a>
-                <a href="{% url 'classes:class-delete' class.id %}" class="btn btn-danger btn-sm">Delete</a>
-              {% endif %}
-            </td>
-          </tr>
-        {% empty %}
-          <tr>
-            <td colspan="4">No classes available.</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+  <!-- Class List -->
+  <h2 class="mt-5">Your Classes</h2>
+  <table class="table table-hover">
+    <thead class="table-light">
+      <tr>
+        <th>Class Name</th>
+        <th>Status</th>
+        <th>Schedule</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for class in classes %}
+      <tr>
+        <td>{{ class.title }}</td>
+        <td>
+          {% if class.status == "ongoing" %}
+            <span class="badge bg-success">Ongoing</span>
+          {% elif class.status == "coming_soon" %}
+            <span class="badge bg-warning">Coming Soon</span>
+          {% else %}
+            <span class="badge bg-secondary">Completed</span>
+          {% endif %}
+        </td>
+        <td>{{ class.schedule|date:"Y-m-d H:i" }}</td>
+        <td>
+          <a href="{% url 'classes:class-detail' class.id %}" class="btn btn-secondary btn-sm">View</a>
+          <a href="{% url 'classes:class-update' class.id %}" class="btn btn-primary btn-sm">Edit</a>
+          <a href="{% url 'classes:class-delete' class.id %}" class="btn btn-danger btn-sm">Delete</a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="4">No classes available.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
-{% else %}
-  <div class="container my-5">
-    <div class="alert alert-warning" role="alert">
-      You are not authorized to view this dashboard. Please log in as an instructor.
-    </div>
-  </div>
-{% endif %}
 {% endblock %}

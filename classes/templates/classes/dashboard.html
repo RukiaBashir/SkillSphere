@@ -1,79 +1,137 @@
 {% extends "classes_base.html" %}
 {% load static %}
 {% load crispy_forms_tags %}
+{% load l10n %}
 
 {% block content %}
 <div class="container my-5">
-  <h1 class="mb-4">Dashboard</h1>
-  {% if request.user.is_authenticated %}
-    <div class="row">
-      <!-- Section: Browse Available Classes -->
-      <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-          <div class="card-header bg-primary text-white">
-            Available Classes
-          </div>
-          <div class="card-body">
-            <p>Explore all available classes.</p>
-            <a href="{% url 'classes:class-list' %}" class="btn btn-primary btn-sm">View Classes</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section: Enrolled/Created Classes -->
-      <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-          <div class="card-header bg-success text-white">
-            {% if request.user.role == 'learner' %}
-              My Enrolled Classes
-            {% else %}
-              My Created Classes
-            {% endif %}
-          </div>
-          <div class="card-body">
-            <p>
-              {% if request.user.role == 'learner' %}
-                View the classes you've enrolled in.
-              {% else %}
-                View the classes you have created.
-              {% endif %}
-            </p>
-            {% if request.user.role == 'learner' %}
-              <a href="{% url 'classes:enrollment-list' %}" class="btn btn-success btn-sm">My Enrollments</a>
-            {% else %}
-              <a href="{% url 'classes:dashboard' %}" class="btn btn-success btn-sm">My Created Classes</a>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-
-      <!-- Section: Additional Options / Payment History -->
-      <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-          {% if request.user.role == 'learner' %}
-            <div class="card-header bg-warning text-white">
-              Additional Options
-            </div>
-            <div class="card-body">
-              <p>Check your cart or update your profile.</p>
-              <a href="{% url 'payments:cart-list' %}" class="btn btn-warning btn-sm">View Cart</a>
-            </div>
-          {% elif request.user.role == 'instructor' %}
-            <div class="card-header bg-info text-white">
-              Payment History
-            </div>
-            <div class="card-body">
-              <p>View your registration fee payment history.</p>
-              <a href="{% url 'payments:payment-history' %}" class="btn btn-info btn-sm">View Payment History</a>
-            </div>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  {% else %}
-    <div class="alert alert-info">
-      Please <a href="{% url 'accounts:login' %}">login</a> to access your dashboard.
-    </div>
+  <h1 class="mb-4">Instructor Dashboard</h1>
+  {% if messages %}
+  {% for message in messages %}
+  <div class="alert alert-dismissible fade show {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %}" role="alert">
+    {{ message }}
+  </div>
+  {% endfor %}
   {% endif %}
+  <!-- Payment Check: If the instructor hasn't paid, show a link to complete registration -->
+  {% if not instructor_paid %}
+  <div class="alert alert-danger">
+    <strong>Payment Required:</strong> Please complete your instructor registration fee.
+    <a href="{% url 'accounts:become-instructor' %}" class="btn btn-primary btn-sm">Pay Now</a>
+  </div>
+  {% else %}
+  <a href="{% url 'classes:class-create' %}" class="btn btn-success mb-4">Create New Class</a>
+
+  <!-- Summary Cards -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card text-center bg-light">
+        <div class="card-body">
+          <h5 class="card-title">Total Classes Owned</h5>
+          <p class="card-text display-4 text-primary">{{ total_classes }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center bg-light">
+        <div class="card-body">
+          <h5 class="card-title">Ongoing Classes</h5>
+          <p class="card-text display-4 text-success">{{ ongoing_classes }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center bg-light">
+        <div class="card-body">
+          <h5 class="card-title">Coming Soon</h5>
+          <p class="card-text display-4 text-warning">{{ coming_soon_classes }}</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center bg-light">
+        <div class="card-body">
+          <h5 class="card-title">Total Learners</h5>
+          <p class="card-text display-4 text-info">{{ learners_count }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Classes Table -->
+  <h2>My Created Classes</h2>
+  {% if classes_created %}
+  <table class="table table-hover">
+    <thead class="table-light">
+      <tr>
+        <th>Class Name</th>
+        <th>Status</th>
+        <th>Enrolled Learners</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for class in classes_created %}
+      <tr>
+        <td>{{ class.title }}</td>
+        <td>
+          {% if class.is_active %}
+          <span class="badge bg-success">Active</span>
+          {% else %}
+          <span class="badge bg-secondary">Inactive</span>
+          {% endif %}
+        </td>
+        <td>{{ class.enrollments.count }}</td>
+        <td>
+          <a href="{% url 'classes:class-detail' class.id %}" class="btn btn-secondary btn-sm">View</a>
+          <a href="{% url 'classes:class-update' class.id %}" class="btn btn-primary btn-sm">Edit</a>
+          <a href="{% url 'classes:class-delete' class.id %}" class="btn btn-danger btn-sm">Delete</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>You haven't created any classes yet.</p>
+  {% endif %}
+
+  <!-- Enrolled Students Section -->
+  <h2 class="mt-5">Enrolled Students</h2>
+  {% for class in classes_created %}
+  <div class="card mb-4">
+    <div class="card-header bg-info text-white">
+      <h5>{{ class.title }} - Enrolled Students</h5>
+    </div>
+    <div class="card-body">
+      {% if class.enrollments.all %}
+      {% for enrollment in class.enrollments.all %}
+      <div class="mb-3">
+        <strong>{{ enrollment.learner.get_full_name }}</strong>
+        <small>({{ enrollment.get_learning_stage_display }})</small>
+        <div class="progress mt-1">
+          <div class="progress-bar
+          {% if enrollment.progress == 100 %} bg-dark
+          {% elif enrollment.progress >= 81 %} bg-success
+          {% elif enrollment.progress >= 61 %} bg-primary
+          {% elif enrollment.progress >= 41 %} bg-info
+          {% elif enrollment.progress >= 21 %} bg-warning
+          {% else %} bg-danger {% endif %}" 
+          role="progressbar" 
+          style="width: {{ enrollment.progress }}%;" 
+          aria-valuenow="{{ enrollment.progress }}" 
+          aria-valuemin="0" 
+          aria-valuemax="100">
+          {{ enrollment.progress }}%
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p class="text-muted">No enrolled students yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endfor %}
+{% endif %}
 </div>
 {% endblock %}

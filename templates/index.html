@@ -16,7 +16,7 @@
   <style>
     body {
       background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
-                  url("{% static 'img/background.png' %}") no-repeat center center fixed;
+      url("{% static 'img/background.png' %}") no-repeat center center fixed;
       background-size: cover;
       color: #fff;
     }
@@ -69,188 +69,188 @@
           <img src="{% static 'img/skill_logo.png' %}" width="80" height="80" alt="Home" class="d-inline-block align-text-top logo-glow">
         </a>
         <button class="navbar-toggler navbar-dark" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-          <ul class="navbar-nav ms-auto mb-2 mb-lg-0 nav-links-container">
-           <li class="nav-item">
-            <a href="/" class="nav-link nav-hover link-light"><i class="fas fa-home"></i> Home</a>
-           </li>
-           <li class="nav-item">
-            <a href="#about" class="nav-link nav-hover link-light"><i class="fas fa-info-circle"></i> About</a>
-           </li>
-           <li class="nav-item">
-            <a href="#contact" class="nav-link nav-hover link-light"><i class="fas fa-envelope"></i> Contact</a>
-           </li>
-           {% if user.is_authenticated %}
-           <li class="nav-item">
-             <a class="nav-link nav-hover link-light" href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
-           </li>
-           {% else %}
-           <li class="nav-item">
-             <a href="{% url 'accounts:login' %}" class="nav-link nav-hover link-light"><i class="fas fa-user"></i> User</a>
-           </li>
-           <li class="nav-item">
-             <a href="/admin/" class="nav-link nav-hover link-light"><i class="fas fa-user-shield"></i> Admin</a>
-           </li>
-           {% endif %}
-          </ul>
-        </div>
-      </div>
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0 nav-links-container">
+         <li class="nav-item">
+          <a href="/" class="nav-link nav-hover link-light"><i class="fas fa-home"></i> Home</a>
+        </li>
+        <li class="nav-item">
+          <a href="#about" class="nav-link nav-hover link-light"><i class="fas fa-info-circle"></i> About</a>
+        </li>
+        <li class="nav-item">
+          <a href="#contact" class="nav-link nav-hover link-light"><i class="fas fa-envelope"></i> Contact</a>
+        </li>
+        {% if user.is_authenticated %}
+        <li class="nav-item">
+         <a class="nav-link nav-hover link-light" href="{% url 'accounts:logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+       </li>
+       {% else %}
+       <li class="nav-item">
+         <a href="{% url 'accounts:login' %}" class="nav-link nav-hover link-light"><i class="fas fa-user"></i> User</a>
+       </li>
+       <li class="nav-item">
+         <a href="/admin/" class="nav-link nav-hover link-light"><i class="fas fa-user-shield"></i> Admin</a>
+       </li>
+       {% endif %}
+     </ul>
+   </div>
+ </div>
+</div>
+</header>
+
+<!-- Home Section -->
+<section id="home" class="py-5 text-center">
+  <div class="container">
+    <div class="mb-5">
+      <h1 class="fw-bold">Welcome to SkillSphere</h1>
+      <p class="lead">Unlock new opportunities! Connect with top instructors and master skills in baking, music, football, and more.</p>
     </div>
-  </header>
-
-  <!-- Home Section -->
-  <section id="home" class="py-5 text-center">
-    <div class="container">
-      <div class="mb-5">
-        <h1 class="fw-bold">Welcome to SkillSphere</h1>
-        <p class="lead">Unlock new opportunities! Connect with top instructors and master skills in baking, music, football, and more.</p>
-      </div>
-      <div class="row g-4">
-        <div class="col-md-4">
-          <div class="card h-100 text-dark shadow-lg">
-            <div class="card-body">
-              <h5 class="card-title fw-bold text-primary"><u>Browse Classes</u></h5>
-              <p class="card-text">Discover a wide range of skill-based classes and enroll in sessions that match your passion and expertise level.</p>
-              <a href="{% url 'accounts:learner-dashboard' %}" class="btn btn-outline-primary">Browse Classes <i class="fas fa-search"></i></a>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-4">
-          <div class="card h-100 text-dark shadow-lg">
-            <div class="card-body">
-              <h5 class="card-title fw-bold text-success"><u>Become an Instructor</u></h5>
-              {% if user.is_authenticated %}
-                {% if user.role == "instructor" %}
-                  {% if user.instructor_status == "active" %}
-                    <p class="card-text">Your instructor account is active and paid.</p>
-                    <a href="{% url 'accounts:instructor-dashboard' %}" class="btn btn-outline-secondary">Go to Dashboard</a>
-                  {% else %}
-                    <p class="card-text">Your instructor registration is pending payment. Complete the payment to activate your account.</p>
-                    <a href="{% url 'accounts:become-instructor' %}" class="btn btn-outline-warning">Complete Payment <i class="fas fa-money-check-alt"></i></a>
-                  {% endif %}
-                {% else %}
-                  <p class="card-text">Want to share your expertise? Learn how to become an instructor.</p>
-                  <a href="{% url 'accounts:register' %}" class="btn btn-outline-success">Become an Instructor <i class="fas fa-chalkboard-teacher"></i></a>
-                {% endif %}
-              {% else %}
-                <p class="card-text">Want to share your expertise? Please log in to learn how to become an instructor.</p>
-                <a href="{% url 'accounts:login' %}" class="btn btn-outline-success">Login</a>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-4">
-          <div class="card h-100 text-dark shadow-lg">
-            <div class="card-body">
-              <h5 class="card-title fw-bold text-warning"><u>Manage Bookings</u></h5>
-              <p class="card-text">Stay organized! Keep track of your upcoming sessions and manage bookings effortlessly.</p>
-              <a href="{% url 'notification:notification-dashboard' %}" class="btn btn-outline-warning">View Bookings <i class="fas fa-calendar-check"></i></a>
-            </div>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card h-100 text-dark shadow-lg">
+          <div class="card-body">
+            <h5 class="card-title fw-bold text-primary"><u>Browse Classes</u></h5>
+            <p class="card-text">Discover a wide range of skill-based classes and enroll in sessions that match your passion and expertise level.</p>
+            <a href="{% url 'classes:class-list' %}" class="btn btn-outline-primary">Browse Classes <i class="fas fa-search"></i></a>
           </div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- About Section -->
-  <section id="about" class="py-5 text-dark">
-    <div class="container text-center">
-      <h2 class="fw-bold text-light">Why Choose SkillSphere?</h2>
-      <p class="lead text-light">Empowering learners and instructors with seamless skill-based education.</p>
-      <div class="row mt-4">
-        <div class="col-md-4">
-          <div class="card h-100 shadow-lg">
-            <div class="card-body text-center">
-              <i class="fas fa-graduation-cap fa-3x text-primary"></i>
-              <h4 class="mt-3">Expert Instructors</h4>
-              <p>Learn from top professionals who are passionate about teaching and guiding you through every step.</p>
-            </div>
+      <div class="col-md-4">
+        <div class="card h-100 text-dark shadow-lg">
+          <div class="card-body">
+            <h5 class="card-title fw-bold text-success"><u>Become an Instructor</u></h5>
+            {% if user.is_authenticated %}
+            {% if user.role == "instructor" %}
+            {% if user.instructor_status == "active" %}
+            <p class="card-text">Your instructor account is active and paid.</p>
+            <a href="{% url 'accounts:instructor-dashboard' %}" class="btn btn-outline-secondary">Go to Dashboard</a>
+            {% else %}
+            <p class="card-text">Your instructor registration is pending payment. Complete the payment to activate your account.</p>
+            <a href="{% url 'accounts:become-instructor' %}" class="btn btn-outline-warning">Complete Payment <i class="fas fa-money-check-alt"></i></a>
+            {% endif %}
+            {% else %}
+            <p class="card-text">Want to share your expertise? Learn how to become an instructor.</p>
+            <a href="{% url 'accounts:register' %}" class="btn btn-outline-success">Become an Instructor <i class="fas fa-chalkboard-teacher"></i></a>
+            {% endif %}
+            {% else %}
+            <p class="card-text">Want to share your expertise? Please log in to learn how to become an instructor.</p>
+            <a href="{% url 'accounts:login' %}" class="btn btn-outline-success">Login</a>
+            {% endif %}
           </div>
         </div>
-        <div class="col-md-4">
-          <div class="card h-100 shadow-lg">
-            <div class="card-body text-center">
-              <i class="fas fa-chalkboard-teacher fa-3x text-success"></i>
-              <h4 class="mt-3">Diverse Courses</h4>
-              <p>Explore a wide range of courses from baking to coding, ensuring you find the perfect fit.</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="card h-100 shadow-lg">
-            <div class="card-body text-center">
-              <i class="fas fa-clock fa-3x text-warning"></i>
-              <h4 class="mt-3">Flexible Learning</h4>
-              <p>Choose your own schedule and learn at your own pace with our on-demand and live classes.</p>
-            </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="card h-100 text-dark shadow-lg">
+          <div class="card-body">
+            <h5 class="card-title fw-bold text-warning"><u>Manage Bookings</u></h5>
+            <p class="card-text">Stay organized! Keep track of your upcoming sessions and manage bookings effortlessly.</p>
+            <a href="{% url 'accounts:dashboard' %}" class="btn btn-outline-warning">View Bookings <i class="fas fa-calendar-check"></i></a>
           </div>
         </div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- Contact Section -->
-  <section id="contact" class="py-5 bg-dark text-light">
-    <div class="container text-center">
-      <h2 class="fw-bold">Get in Touch</h2>
-      <p class="lead">Have questions? We’re here to help! Reach out to us anytime.</p>
-      <div class="row justify-content-center">
-        <div class="col-md-6">
-          <form action="{% url 'feedback_create_url' %}" method="POST">
-            {% csrf_token %}
-            <div class="mb-3">
-              <input type="text" class="form-control" placeholder="Your Name" name="f_name" required>
-            </div>
-            <div class="mb-3">
-              <input type="email" class="form-control" placeholder="Your Email" name="f_email" required>
-            </div>
-            <div class="mb-3">
-              <textarea class="form-control" rows="4" placeholder="Your Message" name="f_message" required></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">Send Message</button>
-          </form>
+<!-- About Section -->
+<section id="about" class="py-5 text-dark">
+  <div class="container text-center">
+    <h2 class="fw-bold text-light">Why Choose SkillSphere?</h2>
+    <p class="lead text-light">Empowering learners and instructors with seamless skill-based education.</p>
+    <div class="row mt-4">
+      <div class="col-md-4">
+        <div class="card h-100 shadow-lg">
+          <div class="card-body text-center">
+            <i class="fas fa-graduation-cap fa-3x text-primary"></i>
+            <h4 class="mt-3">Expert Instructors</h4>
+            <p>Learn from top professionals who are passionate about teaching and guiding you through every step.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 shadow-lg">
+          <div class="card-body text-center">
+            <i class="fas fa-chalkboard-teacher fa-3x text-success"></i>
+            <h4 class="mt-3">Diverse Courses</h4>
+            <p>Explore a wide range of courses from baking to coding, ensuring you find the perfect fit.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card h-100 shadow-lg">
+          <div class="card-body text-center">
+            <i class="fas fa-clock fa-3x text-warning"></i>
+            <h4 class="mt-3">Flexible Learning</h4>
+            <p>Choose your own schedule and learn at your own pace with our on-demand and live classes.</p>
+          </div>
         </div>
       </div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- Bottom Navbar -->
-  <nav class="navbar navbar-dark bg-dark position-relative">
-    <div class="container-fluid d-flex justify-content-around">
-      <a href="/" class="text-light"><i class="fas fa-home"></i> Home</a>
-      <a href="#about" class="text-light"><i class="fas fa-info-circle"></i> About</a>
-      <a href="#contact" class="text-light"><i class="fas fa-envelope"></i> Contact</a>
-      <a href="{% url 'accounts:login' %}" class="text-light"><i class="fas fa-user"></i> Login</a>
+<!-- Contact Section -->
+<section id="contact" class="py-5 bg-dark text-light">
+  <div class="container text-center">
+    <h2 class="fw-bold">Get in Touch</h2>
+    <p class="lead">Have questions? We’re here to help! Reach out to us anytime.</p>
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <form action="{% url 'feedback_create_url' %}" method="POST">
+          {% csrf_token %}
+          <div class="mb-3">
+            <input type="text" class="form-control" placeholder="Your Name" name="f_name" required>
+          </div>
+          <div class="mb-3">
+            <input type="email" class="form-control" placeholder="Your Email" name="f_email" required>
+          </div>
+          <div class="mb-3">
+            <textarea class="form-control" rows="4" placeholder="Your Message" name="f_message" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary">Send Message</button>
+        </form>
+      </div>
     </div>
-  </nav>
+  </div>
+</section>
 
-  <footer class="text-center py-3 bg-dark text-light">
-    <p class="mb-0">2025 &copy; All Rights Reserved.</p>
-  </footer>
+<!-- Bottom Navbar -->
+<nav class="navbar navbar-dark bg-dark position-relative">
+  <div class="container-fluid d-flex justify-content-around">
+    <a href="/" class="text-light"><i class="fas fa-home"></i> Home</a>
+    <a href="#about" class="text-light"><i class="fas fa-info-circle"></i> About</a>
+    <a href="#contact" class="text-light"><i class="fas fa-envelope"></i> Contact</a>
+    <a href="{% url 'accounts:login' %}" class="text-light"><i class="fas fa-user"></i> Login</a>
+  </div>
+</nav>
 
-  <script src="https://unpkg.com/scrollreveal"></script>
-  <script>
+<footer class="text-center py-3 bg-dark text-light">
+  <p class="mb-0">2025 &copy; All Rights Reserved.</p>
+</footer>
+
+<script src="https://unpkg.com/scrollreveal"></script>
+<script>
     // Loading spinner removal
-    window.onload = function() {
-      document.querySelector('.spinner-border').remove();
-    }
-  </script>
-  <script>
-    $(document).ready(function () {
-      $('.navbar-toggler').on('click', function () {
-        $('#navbarNav').slideToggle();
-      });
+  window.onload = function() {
+    document.querySelector('.spinner-border').remove();
+  }
+</script>
+<script>
+  $(document).ready(function () {
+    $('.navbar-toggler').on('click', function () {
+      $('#navbarNav').slideToggle();
     });
-  </script>
-  <script src="{% static 'js/charts.js' %}"></script>
-  <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
-  <script src="{% static 'js/main_home.js' %}"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  });
+</script>
+<script src="{% static 'js/charts.js' %}"></script>
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/main_home.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 </body>
 </html>

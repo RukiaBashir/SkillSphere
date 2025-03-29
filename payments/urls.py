@@ -16,5 +16,5 @@ urlpatterns = [
     # Add a class to the cart (or instructor registration fee if pk is None)
     path('add-to-cart/<int:pk>/', views.AddToCartView.as_view(), name='add-to-cart'),
     # View payment history (for learners and instructors)
-    path('history/', views.PaymentHistoryListView.as_view(), name='payment-history'),
+    path('payment-history/', views.PaymentHistoryListView.as_view(), name='payment-history'),
 ]
