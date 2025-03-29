@@ -25,7 +25,7 @@ from accounts.models import SkillUser, Feedback, SiteConfiguration
 from classes.models import Class, Enrollment, SkillCategory
 from notifications.models import Notification
 from payments.models import CartItem, Order
-from .forms import OTPForm, UserProfileUpdateForm, BecomeInstructorForm, SetNewPasswordForm
+from .forms import OTPForm, UserProfileUpdateForm, BecomeInstructorForm, SetNewPasswordForm, OTPFormPassword
 from .forms import SkillUserRegisterForm
 from django.utils.timezone import now
 
@@ -197,7 +197,7 @@ def verify_otp_password(request):
     Supports email and Twilio OTP verification.
     """
     if request.method == 'POST':
-        form = OTPForm(request.POST)
+        form = OTPFormPassword(request.POST)
         if form.is_valid():
             otp_entered = form.cleaned_data.get('otp')
             valid = False
@@ -235,7 +235,7 @@ def verify_otp_password(request):
                 messages.error(request, "Invalid OTP. Please try again.")
 
     else:
-        form = OTPForm()
+        form = OTPFormPassword()
 
     return render(request, 'users/verify_otp_password.html', {'form': form})
 

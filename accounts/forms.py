@@ -207,6 +207,15 @@ class OTPForm(forms.Form):
             'placeholder': 'Enter OTP'
         })
     )
+class OTPFormPassword(forms.Form):
+    otp = forms.CharField(
+        label='Enter OTP',
+        max_length=6,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter OTP'
+        })
+    )
 
 
 class SetNewPasswordForm(SetPasswordForm):
