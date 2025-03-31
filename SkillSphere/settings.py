@@ -10,10 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
+import sys
 from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
 
+# Ensure the project root is in the Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 DEBUG = os.getenv("DEBUG", "True") == "True"
 
