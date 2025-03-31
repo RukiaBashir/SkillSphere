@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.timezone import now
 
 from classes.models import Class
 from .models import SkillCategory
@@ -18,7 +19,9 @@ class ClassForm(forms.ModelForm):
             'image'  # For the thumbnail
         ]
         widgets = {
-            'schedule': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
+            'schedule': forms.DateTimeInput(
+                attrs={'type': 'datetime-local', 'min': now().strftime('%Y-%m-%dT%H:%M')}
+            ),
         }
 
 

@@ -8,7 +8,7 @@
     {% if result_code == 0 %}
         <div class="alert alert-success">
             <h4>Payment Successful!</h4>
-            <p><strong>Amount Paid:</strong> KES {{ amount }}</p>
+            <p><strong>Amount Paid:</strong> KES {{ amount|floatformat:2 }}</p>
             <p><strong>Receipt Number:</strong> {{ mpesa_receipt_number }}</p>
             <p><strong>Phone Number:</strong> {{ phone_number }}</p>
             <p><strong>Transaction Message:</strong> {{ result_desc }}</p>
@@ -28,6 +28,6 @@
         <li class="list-group-item"><strong>Phone Number:</strong> {{ phone_number }}</li>
     </ul>
 
-    <a href="{% url 'payments:history' %}" class="btn btn-primary mt-3">Back to Payment History</a>
+    <a href="{% url 'payments:payment-history' %}" class="btn btn-primary mt-3">Back to Payment History</a>
 </div>
 {% endblock %}

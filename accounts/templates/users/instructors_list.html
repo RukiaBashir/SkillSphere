@@ -1,0 +1,34 @@
+{% extends "user_base.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">Instructors List</h2>
+    <table class="table table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Date Joined</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for instructor in instructors %}
+            <tr>
+                <td>{{ instructor.id }}</td>
+                <td>{{ instructor.username }}</td>
+                <td>{{ instructor.email }}</td>
+                <td>{{ instructor.date_joined|date:"Y-m-d" }}</td>
+                <td>{% if instructor.has_payments %}Active{% else %}Inactive{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">No instructors found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{% url 'accounts:dashboard' %}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+</div>
+{% endblock %}

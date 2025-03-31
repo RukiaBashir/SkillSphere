@@ -1,0 +1,39 @@
+{% extends "user_base.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">Pending Class Approvals</h2>
+
+    <table class="table table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Class Title</th>
+                <th>Instructor</th>
+                <th>Submitted On</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for class_obj in pending_classes %}
+            <tr>
+                <td>{{ class_obj.id }}</td>
+                <td>{{ class_obj.title }}</td>
+                <td>{{ class_obj.instructor.username }}</td>
+                <td>{{ class_obj.created_at|date:"Y-m-d" }}</td>
+                <td>
+                    <a href="{% url 'classes:approve_class' class_obj.id %}" class="btn btn-success btn-sm">Approve</a>
+                    <a href="{% url 'classes:reject_class' class_obj.id %}" class="btn btn-danger btn-sm">Reject</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center">No pending classes.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{% url 'accounts:dashboard' %}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+</div>
+{% endblock %}

@@ -1,143 +1,139 @@
-{% extends "classes_base.html" %}
+{% extends "user_base.html" %}
 {% load static %}
+
+{% load humanize %}
 
 {% block content %}
 <div class="container my-5">
   <h1 class="mb-4">Admin Dashboard</h1>
 
-  <!-- User Statistics -->
   <div class="row">
     <div class="col-md-3">
-      <div class="card text-center bg-primary text-white mb-3">
-        <div class="card-body">
+      <a href="{% url 'accounts:users_list' %}" class="text-decoration-none">
+        <div class="card text-center bg-dark text-white mb-3 p-4">
           <h5 class="card-title">Total Users</h5>
-          <p class="card-text display-4">{{ total_users }}</p>
+          <p class="display-4">{{ total_users }}</p>
         </div>
-      </div>
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="{% url 'accounts:instructors_list' %}" class="text-decoration-none">
+        <div class="card text-center bg-secondary text-white mb-3 p-4">
+          <h5 class="card-title">Instructors</h5>
+          <p class="display-4">{{ total_instructors }}/{{ total_active_instructors_with_payment }}</p>
+        </div>
+      </a>
     </div>
 
     <div class="col-md-3">
-      <div class="card text-center bg-success text-white mb-3">
-        <div class="card-body">
-          <h5 class="card-title">Instructors (Active)</h5>
-          <p class="card-text display-4">{{ total_active_instructors }}/{{ total_instructors }}</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="col-md-3">
-      <div class="card text-center bg-warning text-dark mb-3">
-        <div class="card-body">
+      <a href="{% url 'accounts:learners_list' %}" class="text-decoration-none">
+        <div class="card text-center bg-secondary text-white mb-3 p-4">
           <h5 class="card-title">Learners</h5>
-          <p class="card-text display-4">{{ total_learners }}</p>
+          <p class="display-4">{{ total_learners }}</p>
         </div>
-      </div>
+      </a>
     </div>
 
     <div class="col-md-3">
-      <div class="card text-center bg-danger text-white mb-3">
-        <div class="card-body">
+      <a href="{% url 'accounts:pending_classes' %}" class="text-decoration-none">
+        <div class="card text-center bg-info text-white mb-3 p-4">
           <h5 class="card-title">Pending Approvals</h5>
-          <p class="card-text display-4">{{ pending_classes }}</p>
+          <p class="display-4">{{ pending_classes }}</p>
         </div>
-      </div>
+      </a>
     </div>
   </div>
 
-  <!-- Class Statistics -->
   <h2 class="mt-5">Class Statistics</h2>
   <div class="row">
     <div class="col-md-4">
-      <div class="card text-center bg-info text-white mb-3">
-        <div class="card-body">
+      <a href="{% url 'accounts:class_list' %}" class="text-decoration-none">
+        <div class="card text-center bg-danger text-white mb-3 p-4">
           <h5 class="card-title">Total Classes</h5>
-          <p class="card-text display-4">{{ total_classes }}</p>
+          <p class="display-4">{{ total_classes }}</p>
         </div>
-      </div>
+      </a>
     </div>
-
+    
     <div class="col-md-4">
-      <div class="card text-center bg-success text-white mb-3">
-        <div class="card-body">
+      <a href="{% url 'accounts:approved_classes' %}" class="text-decoration-none">
+        <div class="card text-center bg-success text-white mb-3 p-4">
           <h5 class="card-title">Approved Classes</h5>
-          <p class="card-text display-4">{{ approved_classes }}</p>
+          <p class="display-4">{{ approved_classes }}</p>
         </div>
-      </div>
+      </a>
     </div>
-
+    
     <div class="col-md-4">
-      <div class="card text-center bg-warning text-dark mb-3">
-        <div class="card-body">
+      <a href="{% url 'accounts:ongoing_classes' %}" class="text-decoration-none">
+        <div class="card text-center bg-primary text-white mb-3 p-4">
           <h5 class="card-title">Ongoing Classes</h5>
-          <p class="card-text display-4">{{ ongoing_classes }}</p>
+          <p class="display-4">{{ ongoing_classes }}</p>
         </div>
-      </div>
+      </a>
     </div>
   </div>
 
-  <!-- Enrollment Statistics -->
   <h2 class="mt-5">Enrollment Statistics</h2>
   <div class="row">
     <div class="col-md-4">
-      <div class="card text-center bg-primary text-white mb-3">
-        <div class="card-body">
+      <a href="{% url 'accounts:enrollment_list' %}" class="text-decoration-none">
+        <div class="card text-center bg-dark text-white mb-3 p-4">
           <h5 class="card-title">Total Enrollments</h5>
-          <p class="card-text display-4">{{ total_enrollments }}</p>
+          <p class="display-4">{{ total_enrollments }}</p>
         </div>
-      </div>
+      </a>
     </div>
 
     <div class="col-md-4">
-      <div class="card text-center bg-success text-white mb-3">
-        <div class="card-body">
+      <a href="{% url 'accounts:paid_enrollments' %}" class="text-decoration-none">
+        <div class="card text-center bg-secondary text-white mb-3 p-4">
           <h5 class="card-title">Paid Enrollments</h5>
-          <p class="card-text display-4">{{ paid_enrollments }}</p>
+          <p class="display-4">{{ paid_enrollments }}</p>
         </div>
-      </div>
+      </a>
     </div>
 
     <div class="col-md-4">
-      <div class="card text-center bg-info text-white mb-3">
-        <div class="card-body">
+      <a href="{% url 'accounts:booked_enrollments' %}" class="text-decoration-none">
+        <div class="card text-center bg-primary text-white mb-3 p-4">
           <h5 class="card-title">Booked Enrollments</h5>
-          <p class="card-text display-4">{{ booked_enrollments }}</p>
+          <p class="display-4">{{ booked_enrollments }}</p>
         </div>
-      </div>
+      </a>
     </div>
   </div>
 
-  <!-- Order & Revenue -->
-  <h2 class="mt-5">Order & Revenue</h2>
-  <div class="row">
-    <div class="col-md-4">
-      <div class="card text-center bg-success text-white mb-3">
-        <div class="card-body">
-          <h5 class="card-title">Total Orders</h5>
-          <p class="card-text display-4">{{ total_orders }}</p>
-        </div>
+<h2 class="mt-5">Order & Revenue</h2>
+<div class="row">
+  <div class="col-md-4">
+    <a href="{% url 'accounts:order_list' %}" class="text-decoration-none">
+      <div class="card text-center bg-info text-white mb-3 p-4">
+        <h5 class="card-title">Total Orders</h5>
+        <p class="display-4">{{ total_orders|intcomma }}</p>  {# Adds commas #}
       </div>
-    </div>
-
-    <div class="col-md-4">
-      <div class="card text-center bg-info text-white mb-3">
-        <div class="card-body">
-          <h5 class="card-title">Total Revenue (KES)</h5>
-          <p class="card-text display-4">{{ total_revenue }}</p>
-        </div>
-      </div>
-    </div>
+    </a>
   </div>
 
-  <!-- Feedback Statistics -->
+  <div class="col-md-4">
+    <a href="{% url 'accounts:revenue' %}" class="text-decoration-none">
+      <div class="card text-center bg-danger text-white mb-3 p-4">
+        <h5 class="card-title">Total Revenue (KES)</h5>
+        <p class="display-4">{{ total_revenue|floatformat:2|intcomma }}</p> {# Formats currency #}
+      </div>
+    </a>
+  </div>
+</div>
+
   <h2 class="mt-5">Feedback Statistics</h2>
   <div class="row">
     <div class="col-md-4">
-      <div class="card text-center bg-dark text-white mb-3">
-        <div class="card-body">
+      <a href="{% url 'accounts:feedback_list' %}" class="text-decoration-none">
+        <div class="card text-center bg-success text-white mb-3 p-4">
           <h5 class="card-title">Total Feedbacks</h5>
-          <p class="card-text display-4">{{ total_feedbacks }}</p>
+          <p class="display-4">{{ total_feedbacks }}</p>
         </div>
-      </div>
+      </a>
     </div>
   </div>
 

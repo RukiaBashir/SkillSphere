@@ -14,7 +14,7 @@ class SiteConfiguration(models.Model):
 
 
 class CartItem(models.Model):
-    user = models.ForeignKey(SkillUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(SkillUser, on_delete=models.CASCADE, related_name='cartitem')
     class_booking = models.ForeignKey(Class, on_delete=models.CASCADE, null=True, blank=True)
     amount = models.DecimalField(max_digits=8, decimal_places=2)
     payment_status = models.CharField(max_length=20, default='pending')
@@ -28,4 +28,4 @@ class Order(models.Model):
     user = models.ForeignKey(SkillUser, on_delete=models.CASCADE)
     total = models.DecimalField(max_digits=8, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
-    # Add additional fields as needed (e.g., transaction id)
+    order_status = models.CharField(max_length=20, default='Pending')

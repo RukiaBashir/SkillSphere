@@ -7,18 +7,18 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
-from django.shortcuts import redirect, get_object_or_404
-from django.shortcuts import render
+from django.shortcuts import redirect, get_object_or_404, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views import View
 from django.views.generic import ListView, DeleteView
+from django.views.generic import TemplateView
 
 from accounts.models import SiteConfiguration
-from classes.models import Enrollment
+from classes.models import Enrollment, Class
 from notifications.models import Notification
 from notifications.utils import send_sms
-from .models import Class, CartItem
+from .models import CartItem, Order
 
 
 class MpesaPaymentView(LoginRequiredMixin, View):
@@ -40,10 +40,9 @@ class MpesaPaymentView(LoginRequiredMixin, View):
             payment_status='pending'
         )
 
-        # Check SiteConfiguration for test mode.
         config = SiteConfiguration.objects.first()
+        # If in test mode, bypass live processing.
         if config and config.test_environment:
-            # Test mode: bypass live processing.
             cart_item.payment_status = 'completed'
             cart_item.is_test_mode = True
             cart_item.transaction_id = f"TEST-{cart_item.id}"
@@ -133,23 +132,19 @@ def mpesa_callback(request):
     if request.method != "POST":
         return JsonResponse({"error": "Invalid request"}, status=400)
     try:
-        # Attempt to parse the JSON body
         callback_data = json.loads(request.body)
         print("Mpesa callback received:", callback_data)
 
-        # Navigate through the callback JSON structure
         stk_callback = callback_data.get("Body", {}).get("stkCallback", {})
         checkout_request_id = stk_callback.get("CheckoutRequestID")
         result_code = stk_callback.get("ResultCode")
         result_desc = stk_callback.get("ResultDesc")
         callback_metadata = stk_callback.get("CallbackMetadata", {})
 
-        # Initialize variables
         amount = None
         mpesa_receipt_number = None
         phone_number = None
 
-        # Extract values from CallbackMetadata items if available
         items = callback_metadata.get("Item", [])
         if items:
             if len(items) >= 2:
@@ -158,19 +153,16 @@ def mpesa_callback(request):
             if len(items) >= 4:
                 phone_number = items[3].get("Value")
 
-        # Retrieve the CartItem using checkout_request_id (ensure your CartItem model has this field)
         payment = CartItem.objects.filter(checkout_request_id=checkout_request_id).first()
 
         if payment:
             if result_code == 0:
-                # Payment successful: update CartItem status and record details
                 payment.payment_status = "completed"
                 payment.mpesa_receipt_number = mpesa_receipt_number
                 payment.amount_paid = amount
                 payment.save()
 
                 notification_message = f"Your M-Pesa payment of {amount} KES was successful. Receipt: {mpesa_receipt_number}"
-                # Create a notification referencing the payment
                 Notification.objects.create(
                     user=payment.user,
                     payment=payment,
@@ -179,7 +171,6 @@ def mpesa_callback(request):
                 if phone_number:
                     send_sms(phone_number, notification_message)
             else:
-                # Payment failed: update status and create a notification with the error message
                 payment.payment_status = "failed"
                 payment.mpesa_error_code = result_code
                 payment.mpesa_error_message = result_desc
@@ -201,6 +192,17 @@ def mpesa_callback(request):
         return JsonResponse({"error": str(e)}, status=500)
 
 
+class PaymentStatusView(LoginRequiredMixin, TemplateView):
+    template_name = "mpesa_callback.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Retrieve payment status details from session and remove them so they're not reused.
+        payment_status = self.request.session.pop('payment_status', {})
+        context.update(payment_status)
+        return context
+
+
 class CartListView(LoginRequiredMixin, ListView):
     """
     Lists all pending CartItems for the current user.
@@ -215,10 +217,8 @@ class CartListView(LoginRequiredMixin, ListView):
         if item_pk:
             try:
                 class_obj = Class.objects.get(pk=item_pk)
-                # Get all cart items for this user and class
                 cart_items_for_item = CartItem.objects.filter(user=self.request.user, class_booking=class_obj)
                 if cart_items_for_item.count() > 1:
-                    # If there are duplicates, keep the first and delete the rest
                     first_item = cart_items_for_item.first()
                     cart_items_for_item.exclude(pk=first_item.pk).delete()
                 elif not cart_items_for_item.exists():
@@ -277,7 +277,6 @@ class CheckoutView(LoginRequiredMixin, View):
         if not config or not config.enable_payments:
             for payment in cart_items:
                 payment.payment_status = 'completed'
-                # Mark as test mode for logging purposes
                 payment.is_test_mode = True
                 payment.transaction_id = f"TEST-{payment.id}"
                 payment.processed_at = timezone.now()
@@ -288,7 +287,6 @@ class CheckoutView(LoginRequiredMixin, View):
                     payment=payment,
                     message=f"[Admin Bypass] Your payment for {class_title} was processed successfully."
                 )
-                # For class purchases, create/update Enrollment
                 if payment.class_booking:
                     enrollment, created = Enrollment.objects.get_or_create(
                         learner=payment.user,
@@ -299,10 +297,17 @@ class CheckoutView(LoginRequiredMixin, View):
                         enrollment.is_paid = True
                         enrollment.paid_at = timezone.now()
                         enrollment.save()
-            return JsonResponse({
-                "message": "Payments bypassed via admin configuration. Payment processed successfully.",
-                "total": total
-            })
+            Order.objects.create(user=request.user, total=total)
+            request.session['payment_status'] = {
+                'result_code': 0,
+                'amount': float(total),
+                'mpesa_receipt_number': f"TEST-{total}-{timezone.now().strftime('%Y%m%d%H%M%S')}",
+                'phone_number': request.user.phone_number,
+                'result_desc': "Payment processed via admin bypass.",
+                'merchant_request_id': "",
+                'checkout_request_id': ""
+            }
+            return redirect('payments:payment_status')
 
         # Test mode: auto-complete payments.
         if config and config.test_environment:
@@ -318,7 +323,6 @@ class CheckoutView(LoginRequiredMixin, View):
                     payment=payment,
                     message=f"[Test Mode] Your payment for {class_title} was processed successfully."
                 )
-                # Create/update Enrollment if a class was purchased
                 if payment.class_booking:
                     enrollment, created = Enrollment.objects.get_or_create(
                         learner=payment.user,
@@ -329,10 +333,17 @@ class CheckoutView(LoginRequiredMixin, View):
                         enrollment.is_paid = True
                         enrollment.paid_at = timezone.now()
                         enrollment.save()
-            return JsonResponse({
-                "message": "Test Environment: Payment processed successfully.",
-                "total": total
-            })
+            Order.objects.create(user=request.user, total=total)
+            request.session['payment_status'] = {
+                'result_code': 0,
+                'amount': float(total),
+                'mpesa_receipt_number': f"TEST-{total}-{timezone.now().strftime('%Y%m%d%H%M%S')}",
+                'phone_number': request.user.phone_number,
+                'result_desc': "Payment processed in test mode.",
+                'merchant_request_id': "",
+                'checkout_request_id': ""
+            }
+            return redirect('payments:payment_status')
 
         # Live Payment Processing via Mpesa.
         consumer_key = settings.MPESA_CONSUMER_KEY
@@ -386,7 +397,6 @@ class CheckoutView(LoginRequiredMixin, View):
                         payment=payment,
                         message=f"Your payment for {class_title} has been completed successfully."
                     )
-                    # Create/update Enrollment for purchased classes
                     if payment.class_booking:
                         enrollment, created = Enrollment.objects.get_or_create(
                             learner=request.user,
@@ -397,10 +407,18 @@ class CheckoutView(LoginRequiredMixin, View):
                             enrollment.is_paid = True
                             enrollment.paid_at = timezone.now()
                             enrollment.save()
-                return JsonResponse({
-                    "message": "Mpesa payment initiated and payments completed",
-                    "response": response.json()
-                })
+                Order.objects.create(user=request.user, total=total)
+                response_data = response.json()
+                request.session['payment_status'] = {
+                    'result_code': 0,
+                    'amount': float(total),
+                    'mpesa_receipt_number': response_data.get("MpesaReceiptNumber", ""),
+                    'phone_number': request.user.phone_number,
+                    'result_desc': response_data.get("ResponseDescription", "Payment initiated"),
+                    'merchant_request_id': response_data.get("MerchantRequestID", ""),
+                    'checkout_request_id': response_data.get("CheckoutRequestID", "")
+                }
+                return redirect('payments:payment_status')
             else:
                 return JsonResponse({
                     "error": "Failed to initiate Mpesa payment",
@@ -420,11 +438,9 @@ class AddToCartView(LoginRequiredMixin, View):
     """
 
     def post(self, request, pk=None, *args, **kwargs):
-        # Retrieve site configuration; if not found, assume production defaults.
         site_config = SiteConfiguration.objects.first()
         is_test = site_config.test_environment if site_config else False
 
-        # Case for instructor registration fee (when no pk is provided)
         if pk is None:
             fee_amount = getattr(settings, "INSTRUCTOR_REGISTRATION_FEE", 100.00)
             cart_item = CartItem.objects.filter(user=request.user, class_booking__isnull=True).first()
@@ -447,7 +463,6 @@ class AddToCartView(LoginRequiredMixin, View):
                 })
             return redirect('payments:cart-list')
 
-        # Process a class purchase.
         try:
             class_obj = Class.objects.get(pk=pk)
         except Class.DoesNotExist:
@@ -475,7 +490,6 @@ class AddToCartView(LoginRequiredMixin, View):
                 payment_status='pending'
             )
 
-        # In test mode, mark the item as completed immediately.
         if is_test:
             cart_item.payment_status = "completed"
             cart_item.save()
@@ -510,7 +524,7 @@ class CartItemHistoryListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-        now = timezone.now()
+        current_time = timezone.now()
         history = []
 
         if user.role == 'instructor':
@@ -521,21 +535,20 @@ class CartItemHistoryListView(LoginRequiredMixin, ListView):
                     'payment': payment,
                     'activation_date': activation_date,
                     'expiry_date': expiry_date,
-                    'status': getattr(user, 'instructor_status', 'N/A'),  # For example: active/inactive
+                    'status': getattr(user, 'instructor_status', 'N/A'),
                 })
         else:
             for payment in self.get_queryset():
                 purchase_date = payment.created_at
                 expiry_date = purchase_date + datetime.timedelta(days=365)
-                is_expired = now > expiry_date
+                is_expired = current_time > expiry_date
                 history.append({
                     'payment': payment,
                     'purchase_date': purchase_date,
                     'expiry_date': expiry_date,
                     'is_expired': is_expired,
-                    'join_url': payment.class_booking.get_classroom_url()
-                    if payment.class_booking and hasattr(payment.class_booking, 'get_classroom_url')
-                    else None,
+                    'join_url': payment.class_booking.get_classroom_url() if payment.class_booking and hasattr(
+                        payment.class_booking, 'get_classroom_url') else None,
                 })
         context['payment_history'] = history
         return context
@@ -547,5 +560,4 @@ class PaymentHistoryListView(LoginRequiredMixin, ListView):
     context_object_name = 'transactions'
 
     def get_queryset(self):
-        # Return all CartItems for the current user, ordered by creation date (newest first)
         return CartItem.objects.filter(user=self.request.user).order_by('-created_at')

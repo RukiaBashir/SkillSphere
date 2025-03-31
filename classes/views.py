@@ -12,11 +12,11 @@ from .forms import ClassForm, SkillCategoryForm
 from .models import Class, SkillCategory, Enrollment
 
 
-
 def class_list(request):
     classes = Class.objects.all()
     purchased_class_ids = []
     own_class_ids = []
+
     if request.user.is_authenticated:
         if request.user.role == 'learner':
             # Collect IDs of classes the learner has purchased (is_paid=True)
@@ -28,6 +28,11 @@ def class_list(request):
             own_class_ids = list(
                 Class.objects.filter(instructor=request.user).values_list('id', flat=True)
             )
+
+    # Annotate classes with a flag for whether the user can see details
+    for class_obj in classes:
+        class_obj.show_details = class_obj.id in purchased_class_ids or class_obj.id in own_class_ids
+
     context = {
         'classes': classes,
         'purchased_class_ids': purchased_class_ids,

@@ -1,0 +1,48 @@
+{% extends "user_base.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">Class List</h2>
+
+    <table class="table table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Instructor</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for class_obj in classes %}
+            <tr>
+                <td>{{ class_obj.id }}</td>
+                <td>{{ class_obj.title }}</td>
+                <td>{{ class_obj.instructor.username }}</td>
+                <td>{{ class_obj.category.name }}</td>
+                <td>
+                    {% if class_obj.status == "approved" %}
+                        <span class="badge bg-success">Approved</span>
+                    {% elif class_obj.status == "pending" %}
+                        <span class="badge bg-warning">Pending</span>
+                    {% else %}
+                        <span class="badge bg-danger">Rejected</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'classes:class-detail' class_obj.id %}" class="btn btn-info btn-sm">View</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">No classes available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{% url 'accounts:dashboard' %}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+</div>
+{% endblock %}

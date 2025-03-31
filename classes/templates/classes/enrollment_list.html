@@ -64,51 +64,51 @@
     <h4>My Enrolled Classes</h4>
 
     {% if enrollments %}
-        <div class="row">
-            {% for enrollment in enrollments %}
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 shadow-sm 
-                {% if enrollment.learning_stage == 'Beginner' %} bg-primary text-white
-                {% elif enrollment.learning_stage == 'Intermediate' %} bg-success text-white
-                {% elif enrollment.learning_stage == 'Expert' %} bg-warning text-dark
-                {% else %} bg-light text-dark {% endif %}">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ enrollment.class_obj.title }}</h5>
-                        <p class="card-text">Learning Stage: <strong>{{ enrollment.get_learning_stage_display }}</strong></p>
-                        <p class="card-text">Progress: {{ enrollment.progress }}%</p>
+    <div class="row">
+        {% for enrollment in enrollments %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm 
+            {% if enrollment.learning_stage == 'Beginner' %} bg-primary text-white
+            {% elif enrollment.learning_stage == 'Intermediate' %} bg-success text-white
+            {% elif enrollment.learning_stage == 'Expert' %} bg-warning text-dark
+            {% else %} bg-light text-dark {% endif %}">
+            <div class="card-body">
+                <h5 class="card-title">{{ enrollment.class_obj.title }}</h5>
+                <p class="card-text">Learning Stage: <strong>{{ enrollment.get_learning_stage_display }}</strong></p>
+                <p class="card-text">Progress: {{ enrollment.progress }}%</p>
 
-                        {% with progress=enrollment.progress %}
-                        <div class="spinner-border 
-                            {% if progress == 100 %} text-dark
-                            {% elif progress >= 81 %} text-success
-                            {% elif progress >= 61 %} text-primary
-                            {% elif progress >= 41 %} text-info
-                            {% elif progress >= 21 %} text-warning
-                            {% else %} text-danger {% endif %}" role="status">
-                            <span class="visually-hidden">{{ progress }}% Complete</span>
-                        </div>
-
-                        <p class="mt-2">
-                            {% if progress == 100 %} 🎓 Completed!
-                            {% elif progress >= 81 %} ✅ Almost Done (81-99%)
-                            {% elif progress >= 61 %} 📘 Advanced (61-80%)
-                            {% elif progress >= 41 %} 📊 Intermediate (41-60%)
-                            {% elif progress >= 21 %} ⚠️ Beginner (21-40%)
-                            {% else %} 🚨 Just Started (0-20%)
-                            {% endif %}
-                        </p>
-                        {% endwith %}
-                    </div>
-                </div>
+                {% with progress=enrollment.progress %}
+                <div class="spinner-border 
+                {% if progress == 100 %} text-dark
+                {% elif progress >= 80 %} text-success
+                {% elif progress >= 60 %} text-primary
+                {% elif progress >= 40 %} text-info
+                {% elif progress >= 20 %} text-warning
+                {% else %} text-danger {% endif %}" role="status">
+                <span class="visually-hidden">{{ progress }}% Complete</span>
             </div>
-            {% endfor %}
+
+            <p class="mt-2">
+                {% if progress == 100 %} 🎓 Completed!
+                {% elif progress >= 80 %} ✅ Almost Done (80-99%)
+                {% elif progress >= 60 %} 📘 Advanced (60-79%)
+                {% elif progress >= 40 %} 📊 Intermediate (40-59%)
+                {% elif progress >= 20 %} ⚠️ Beginner (20-39%)
+                {% else %} 🚨 Just Started (0-19%)
+                {% endif %}
+            </p>
+            {% endwith %}
         </div>
-    {% else %}
-        <p>You are not enrolled in any classes yet.</p>
-    {% endif %}
+    </div>
+</div>
+{% endfor %}
+</div>
+{% else %}
+<p>You are not enrolled in any classes yet.</p>
+{% endif %}
 
 {% else %}
-    <p>You are not a learner.</p>
+<p>You are not a learner.</p>
 {% endif %}
 
 {% endblock %}
