@@ -13,7 +13,6 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
-from decouple import config
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -23,9 +22,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY SETTINGS
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
-ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="").split(",")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS")
 
-DEBUG = config("DEBUG", default=True, cast=bool)
+DEBUG = os.getenv("DEBUG")
 
 AUTH_USER_MODEL = 'accounts.SkillUser'
 LOGIN_URL = '/login/'
