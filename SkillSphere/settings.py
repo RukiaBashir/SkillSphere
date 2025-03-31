@@ -17,7 +17,7 @@ import dj_database_url
 
 # Ensure the project root is in the Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', "skillsphere-7bgd.onrender.com,127.0.0.1").split(",")
 DEBUG = os.getenv("DEBUG", "True") == "True"
 
 # Load environment variables from a .env file
