@@ -123,16 +123,9 @@
       </div>
     </div>
     <!-- Content Block -->
-    <div class="col-md-9">
+      <div class="col-md-9">
       {% block content %}
-        {% if messages %}
-          {% for message in messages %}
-            <div class="alert alert-dismissible fade show {% if 'error' in message.tags %}alert-danger{% elif 'success' in message.tags %}alert-success{% else %}alert-info{% endif %}" role="alert">
-              {{ message }}
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-          {% endfor %}
-        {% endif %}
+      <!-- Dynamic Page Content -->
       {% endblock %}
     </div>
   </div>
