@@ -8,6 +8,7 @@ certifi==2025.1.31
 charset-normalizer==3.4.1
 crispy-bootstrap5==2024.10
 defusedxml==0.7.1
+dj-database-url==2.3.0
 Django==4.2.7
 django-bootstrap-icons==0.9.0
 django-browser-reload==1.18.0
@@ -31,6 +32,7 @@ sendgrid==6.11.0
 sqlparse==0.5.3
 starkbank-ecdsa==2.2.0
 twilio==8.5.0
+typing_extensions==4.13.0
 tzdata==2025.1
 urllib3==2.3.0
 yarl==1.18.3
