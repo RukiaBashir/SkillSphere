@@ -1,4 +1,4 @@
-{% extends "user_base.html" %}
+{% extends "classes_base.html" %}
 {% load static %}
 
 {% load humanize %}
@@ -6,7 +6,7 @@
 {% block content %}
 <div class="container my-5">
   <h1 class="mb-4">Admin Dashboard</h1>
-
+<h2 class="mt-5">System Users Statistics</h2>
   <div class="row">
     <div class="col-md-3">
       <a href="{% url 'accounts:users_list' %}" class="text-decoration-none">
@@ -30,15 +30,6 @@
         <div class="card text-center bg-secondary text-white mb-3 p-4">
           <h5 class="card-title">Learners</h5>
           <p class="display-4">{{ total_learners }}</p>
-        </div>
-      </a>
-    </div>
-
-    <div class="col-md-3">
-      <a href="{% url 'accounts:pending_classes' %}" class="text-decoration-none">
-        <div class="card text-center bg-info text-white mb-3 p-4">
-          <h5 class="card-title">Pending Approvals</h5>
-          <p class="display-4">{{ pending_classes }}</p>
         </div>
       </a>
     </div>
