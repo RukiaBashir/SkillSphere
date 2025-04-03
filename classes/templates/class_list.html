@@ -4,6 +4,62 @@
 {% load l10n %}
 
 {% block content %}
+{% if user.role == "instructor" %}
+<div class="row">
+  <div class="col-md-3 mb-3">
+    <div class="card text-center bg-light">
+      <div class="card-body">
+        <h5 class="card-title">Total Classes</h5>
+        <p class="card-text display-4 text-primary">{{ total_classes }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 mb-3">
+    <div class="card text-center bg-light">
+      <div class="card-body">
+        <h5 class="card-title">Ongoing Classes</h5>
+        <p class="card-text display-4 text-success">{{ ongoing_classes }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 mb-3">
+    <div class="card text-center bg-light">
+      <div class="card-body">
+        <h5 class="card-title">Coming Soon</h5>
+        <p class="card-text display-4 text-warning">{{ coming_soon_classes }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 mb-3">
+    <div class="card text-center bg-light">
+      <div class="card-body">
+        <h5 class="card-title">Learners Count</h5>
+        <p class="card-text display-4 text-info">{{ learners_count }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% elif user.role == "learner" %}
+<div class="row">
+  <div class="col-md-3 mb-3">
+    <div class="card text-center bg-light">
+      <div class="card-body">
+        <h5 class="card-title">Enrolled Classes</h5>
+        <p class="card-text display-4 text-primary">{{ enrolled_classes }}</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 mb-3">
+    <div class="card text-center bg-light">
+      <div class="card-body">
+        <h5 class="card-title">Course Coverage</h5>
+        <p class="card-text display-4 text-success">{{ course_coverage }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
 <h2 class="my-0">Available Classes</h2>
 <!-- START Carousel Section -->
 <!-- START Carousel Section -->

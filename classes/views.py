@@ -12,26 +12,60 @@ from .forms import ClassForm, SkillCategoryForm
 from .models import Class, SkillCategory, Enrollment
 
 
-
 def class_list(request):
     classes = Class.objects.all()
     purchased_class_ids = []
     own_class_ids = []
+    enrolled_classes = 0
+    course_coverage = 0
+
+    total_classes = 0
+    ongoing_classes = 0
+    coming_soon_classes = 0
+    learners_count = 0
     if request.user.is_authenticated:
         if request.user.role == 'learner':
             # Collect IDs of classes the learner has purchased (is_paid=True)
             purchased_class_ids = list(
                 request.user.enrollments.filter(is_paid=True).values_list('class_obj__id', flat=True)
             )
+            # Calculates the number of classes a learner has enrolled in
+            enrolled_classes = len(purchased_class_ids)
+            # Get the progress from the courses a learner has enrolled in
+            course_progress = list(
+                request.user.enrollments.filter(is_paid=True).values_list('progress', flat=True)
+            )
+            # Prevents division by zero error
+            if course_progress:
+                # Calculates the total course coverage in all the courses enrolled by the learner
+                course_coverage = (sum(course_progress) / (100 * len(course_progress))) * 100
+
         elif request.user.role == 'instructor':
             # Collect IDs of classes created by the instructor
             own_class_ids = list(
                 Class.objects.filter(instructor=request.user).values_list('id', flat=True)
             )
+            # Retrieve all classes created by the instructor.
+            classes_created = Class.objects.filter(instructor=request.user)
+            # Summary statistics:
+            total_classes = classes_created.count()
+            ongoing_classes = classes_created.filter(status='ongoing').count()  # Assumes Class.status exists
+            coming_soon_classes = classes_created.filter(status='coming_soon').count()  # Assumes status field
+            learners_count = CartItem.objects.filter(
+                class_booking__in=classes_created,
+                payment_status='completed'
+            ).values('user').distinct().count()
+
     context = {
         'classes': classes,
         'purchased_class_ids': purchased_class_ids,
         'own_class_ids': own_class_ids,
+        'enrolled_classes': enrolled_classes,
+        'course_coverage': course_coverage,
+        'total_classes': total_classes,
+        'ongoing_classes': ongoing_classes,
+        'coming_soon_classes': coming_soon_classes,
+        'learners_count': learners_count,
     }
     return render(request, 'class_list.html', context)
 

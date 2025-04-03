@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 
 from accounts.models import SkillUser
+import time
 
 
 class SkillCategory(models.Model):
