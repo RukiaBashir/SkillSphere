@@ -34,7 +34,8 @@
         <img src="{% static 'img/skill_logo.png' %}" width="60" height="60" alt="Home" class="d-inline-block align-text-top logo-glow">
         SkillSphere
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+  <!-- Navbar Toggler (for mobile) -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
       aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -133,18 +134,9 @@
       {% endif %}
     </div>
     <!-- Content Block -->
-    <div class="col-md-9">
+        <div class="col-md-9">
       {% block content %}
-      <!-- Page-specific content goes here -->
-      <!-- Display Django messages -->
-      {% if messages %}
-      {% for message in messages %}
-      <div class="alert alert-dismissible fade show {% if 'error' in message.tags %}alert-danger{% elif 'success' in message.tags %}alert-success{% else %}alert-info{% endif %}" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
-      {% endfor %}
-      {% endif %}
+      <!-- Dynamic Page Content -->
       {% endblock %}
     </div>
   </div>

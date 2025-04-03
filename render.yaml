@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: django-app
+    env: python  # Corrected: Must be "python" (not "python3")
+    plan: free  # Change this if using a paid plan
+    runtime: python  # Corrected: Use "python" instead of "python3"
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py makemigrations
+      python manage.py migrate
+      python scripts/create_superuser.py
+      python manage.py collectstatic --noinput
+    startCommand: gunicorn SkillSphere.wsgi:application
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: your-database  # Ensure this matches your Render DB name
+          property: connectionString
+      - key: SUPERUSER_USERNAME
+        value: admin
+      - key: SUPERUSER_EMAIL
+        value: bashirluqman43@gmail.com
+      - key: SUPERUSER_PASSWORD
+        value: 123456l7

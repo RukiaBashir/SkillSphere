@@ -1,0 +1,38 @@
+{% extends "user_base.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="mb-4">User List</h2>
+    
+    <table class="table table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Date Joined</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>{{ user.id }}</td>
+                <td>{{ user.username }}</td>
+                <td>{{ user.first_name }} {{ user.last_name }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.role }}</td>
+                <td>{{ user.date_joined|date:"Y-m-d" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">No users found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{% url 'accounts:dashboard' %}" class="btn btn-secondary mt-3">Back to Dashboard</a>
+</div>
+{% endblock %}

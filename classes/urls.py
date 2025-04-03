@@ -7,7 +7,6 @@ app_name = 'classes'
 urlpatterns = [
     # List all available classes
     path('class/', views.class_list, name='class-list'),
-
     # Detail view for a specific class
     path('class/<int:pk>/', views.class_detail, name='class-detail'),
 

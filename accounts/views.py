@@ -5,15 +5,17 @@ from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.db import models
 from django.contrib import messages
-from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth import login, authenticate, logout, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import send_mail
+from django.db.models import Sum, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
+from django.utils.formats import localize
 from django.views.decorators.http import require_GET
 from django.views.generic import TemplateView
 from django.views.generic import UpdateView, FormView
@@ -340,6 +342,9 @@ def dashboard_redirect(request):
         return redirect('accounts:learner-dashboard')
 
 
+User = get_user_model()
+
+
 class BecomeInstructorView(LoginRequiredMixin, FormView):
     """
     Displays a form for a user to confirm that they want to become an instructor.
@@ -472,13 +477,20 @@ class AdminDashboardView(LoginRequiredMixin, TemplateView):
         context['total_instructors'] = SkillUser.objects.filter(role='instructor').count()
         context['total_active_instructors'] = SkillUser.objects.filter(role='instructor',
                                                                        instructor_status='active').count()
+        context['total_active_instructors_with_payment'] = SkillUser.objects.filter(
+            role='instructor',
+            instructor_status='active',
+            cartitem__payment_status='completed',
+            cartitem__class_booking__isnull=True  # Filtering instructor fee payments
+        ).distinct().count()
         context['total_learners'] = SkillUser.objects.filter(role='learner').count()
 
         # Class statistics
         context['total_classes'] = Class.objects.count()
         context['approved_classes'] = Class.objects.filter(is_approved=True).count()
         context['pending_classes'] = Class.objects.filter(is_approved=False).count()
-        context['ongoing_classes'] = Class.objects.filter(status='ongoing').count()
+        context['ongoing_classes'] = Class.objects.filter(status='ongoing', is_active=True).count()
+        context['completed_classes'] = Class.objects.filter(status='completed').count()
 
         # Category statistics
         context['total_categories'] = SkillCategory.objects.count()
@@ -488,10 +500,30 @@ class AdminDashboardView(LoginRequiredMixin, TemplateView):
         context['total_enrollments'] = Enrollment.objects.count()
         context['paid_enrollments'] = Enrollment.objects.filter(is_paid=True).count()
         context['booked_enrollments'] = Enrollment.objects.filter(is_booked=True).count()
+        # Revenue Calculations
+        context['class_revenue'] = CartItem.objects.filter(payment_status='completed').aggregate(Sum('amount'))[
+                                       'amount__sum'] or 0
+        context['instructor_payment_total'] = Order.objects.aggregate(Sum('total'))['total__sum'] or 0
+
+        # Format revenue numbers
+        context['class_revenue'] = localize(context['class_revenue'])
+        context['instructor_payment_total'] = localize(context['instructor_payment_total'])
+        # Revenue Breakdown
+        class_revenue = \
+            CartItem.objects.filter(payment_status='completed', class_booking__isnull=False).aggregate(Sum('amount'))[
+                'amount__sum'] or 0
+        instructor_fee_revenue = \
+            CartItem.objects.filter(payment_status='completed', class_booking__isnull=True).aggregate(Sum('amount'))[
+                'amount__sum'] or 0
+        total_revenue = class_revenue + instructor_fee_revenue
+
+        context['class_revenue'] = class_revenue
+        context['instructor_fee_revenue'] = instructor_fee_revenue
+        context['total_revenue'] = total_revenue
 
         # Order statistics
         context['total_orders'] = Order.objects.count()
-        context['total_revenue'] = Order.objects.aggregate(total=models.Sum('total'))['total'] or 0
+        context['completed_orders'] = Order.objects.filter(total__gt=0).count()
 
         # Cart statistics
         context['pending_cart_items'] = CartItem.objects.filter(payment_status='pending').count()
@@ -537,3 +569,126 @@ def request_otp(request):
             return JsonResponse({"error": f"Twilio Error: {e}"}, status=500)
 
     return JsonResponse({"message": "OTP has been sent."})
+
+
+def users_list(request):
+    users = list(User.objects.all())
+    for user in users:
+        if user.role not in ['learner', 'instructor']:
+            user.role = 'Admin'
+    return render(request, 'users/users_list.html', {'users': users})
+
+
+def instructors_list(request):
+    instructors = User.objects.filter(role="instructor")
+    # For each instructor, check if any notification has a non-null payment.
+    for instructor in instructors:
+        instructor.has_payments = Notification.objects.filter(user=instructor, payment__isnull=False).exists()
+    return render(request, "users/instructors_list.html", {"instructors": instructors})
+
+
+def learners_list(request):
+    learners = User.objects.filter(role="learner")  # Assuming a `role` field exists
+    return render(request, "users/learners_list.html", {"learners": learners})
+
+
+def pending_classes(request):
+    pending_class = Class.objects.filter(status="pending")  # Assuming a `status` field
+    return render(request, "users/pending_classes.html", {"pending_classes": pending_class})
+
+
+def class_list(request):
+    classes = Class.objects.all()
+    for class_instance in classes:
+        class_instance.update_status()  # Ensure status is updated dynamically
+    return render(request, "users/class_list.html", {"classes": classes})
+
+
+def approved_classes(request):
+    approved_class = Class.objects.filter(status="approved")
+    return render(request, "users/approved_classes.html", {"approved_classes": approved_class})
+
+
+def ongoing_classes(request):
+    ongoing_class = Class.objects.filter(status="ongoing")
+    return render(request, "users/ongoing_classes.html", {"ongoing_classes": ongoing_class})
+
+
+def enrollment_list(request):
+    # Show all enrollments if the user is staff; otherwise, only show enrollments for the current learner.
+    if request.user.is_staff:
+        enrollments = Enrollment.objects.all()
+    else:
+        enrollments = Enrollment.objects.filter(learner=request.user)
+    return render(request, 'users/enrollment_list.html', {'enrollments': enrollments})
+
+
+def paid_enrollments(request):
+    # For staff, show all paid enrollments; for a learner, show only their paid enrollments.
+    if request.user.is_staff:
+        enrollments = Enrollment.objects.filter(is_paid=True)
+    else:
+        enrollments = Enrollment.objects.filter(is_paid=True, learner=request.user)
+    return render(request, 'users/paid_enrollments.html', {'enrollments': enrollments})
+
+
+def booked_enrollments(request):
+    # Count pending payments in the cart for the current user
+    pending_count = CartItem.objects.filter(user=request.user, payment_status='pending').count()
+
+    # Fetch "booked" enrollments (using the is_booked field)
+    if request.user.is_staff:
+        enrollments = Enrollment.objects.filter(is_booked=True)
+    else:
+        enrollments = Enrollment.objects.filter(is_booked=True, learner=request.user)
+
+    return render(request, 'users/booked_enrollments.html', {
+        'enrollments': enrollments,
+        'pending_count': pending_count
+    })
+
+
+@login_required
+def order_list(request):
+    # Get completed orders for the current user
+    orders = Order.objects.filter(user=request.user, total__gt=0).order_by('-created_at')
+
+    # Get pending cart items (unpaid items in cart)
+    pending_cart_items = CartItem.objects.filter(user=request.user, payment_status='pending').order_by('-created_at')
+
+    # Debugging Output (Optional)
+    print(f"User: {request.user.username}")
+    print(f"Total Completed Orders: {orders.count()}")
+    print(f"Total Pending Cart Items: {pending_cart_items.count()}")
+
+    for order in orders:
+        print(f"Order {order.id} - Total: {order.total} - Status: {order.order_status}")
+
+    context = {
+        'orders': orders,
+        'pending_cart_items': pending_cart_items,
+    }
+    return render(request, 'users/order_list.html', context)
+
+def revenue_view(request):
+    # Revenue from class purchases (filter only completed payments)
+    class_revenue = CartItem.objects.filter(payment_status='completed', class_booking__isnull=False).aggregate(
+        total=Sum('amount'))['total'] or 0
+
+    # Revenue from instructor registration fees (filter orders where class_booking is null)
+    instructor_fee_revenue = CartItem.objects.filter(payment_status='completed', class_booking__isnull=True).aggregate(
+        total=Sum('amount'))['total'] or 0
+
+    # Overall total revenue
+    total_revenue = class_revenue + instructor_fee_revenue
+
+    return render(request, 'users/revenue.html', {
+        'class_revenue': f"{class_revenue:,.2f}",
+        'instructor_fee_revenue': f"{instructor_fee_revenue:,.2f}",
+        'total_revenue': f"{total_revenue:,.2f}"
+    })
+
+
+def feedback_list(request):
+    feedbacks = Feedback.objects.all().order_by('-timestamp')  # Correct field name
+    return render(request, 'users/feedback_list.html', {'feedbacks': feedbacks})
