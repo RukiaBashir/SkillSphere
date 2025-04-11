@@ -30,7 +30,8 @@ class Class(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     price = models.DecimalField(max_digits=8, decimal_places=2)
-    image = models.ImageField(upload_to='classes/', blank=True, null=True)
+    local_image = models.ImageField(upload_to='classes/', blank=True, null=True)  # Local uploads
+    external_image_url = models.URLField(blank=True, null=True)  # Supabase or CDN
     schedule = models.DateTimeField()
     venue_address = models.CharField(max_length=255, blank=True, null=True)
     instructor = models.ForeignKey(SkillUser, on_delete=models.CASCADE, limit_choices_to={'role': 'instructor'})
@@ -51,6 +52,12 @@ class Class(models.Model):
         else:
             self.status = 'completed'
         self.save(update_fields=['status'])
+    @property
+    def image_url(self):
+        """Return whichever image is available: local first, then external."""
+        if self.local_image:
+            return self.local_image.url
+        return self.external_image_url
 
 
 

@@ -7,7 +7,7 @@
   <div class="container my-5">
     {% comment %} Display thumbnail if available {% endcomment %}
     {% if class_obj.image %}
-      <img src="{{ class_obj.image.url }}" alt="{{ class_obj.title }}" class="img-fluid mb-3" style="max-height: 300px; object-fit: cover;">
+      <img src="{{ class_obj.image_url }}" alt="{{ class_obj.title }}" class="img-fluid mb-3" style="max-height: 300px; object-fit: cover;">
     {% endif %}
 
     <h2>{{ class_obj.title }}</h2>

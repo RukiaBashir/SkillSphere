@@ -34,7 +34,9 @@ class SkillUserRegisterForm(UserCreationForm):
         model = get_user_model()
         fields = (
             'first_name', 'last_name', 'specialization', 'birth_date',
-            'username', 'email', 'phone_number', 'role', 'profile_image',
+            'username', 'email', 'phone_number', 'role', 
+            'local_image',
+            'external_image_url',
             'password1', 'password2'
         )
 
@@ -94,7 +96,8 @@ class UserProfileUpdateForm(forms.ModelForm):
             'specialization',
             'birth_date',
             'phone_number',
-            'profile_image'
+            'local_image',
+            'external_image_url'
         ]
         widgets = {
             'birth_date': DateInput(attrs={'type': 'date'})

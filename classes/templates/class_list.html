@@ -9,109 +9,111 @@
 <div id="myCarousel" class="carousel slide" data-bs-ride="carousel">
   <div class="carousel-indicators">
     {% for class_obj in classes %}
-      <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="{{ forloop.counter0 }}"
-        {% if forloop.first %}class="active" aria-current="true"{% endif %}
-        aria-label="Slide {{ forloop.counter }}"></button>
+    <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="{{ forloop.counter0 }}"
+    {% if forloop.first %}class="active" aria-current="true"{% endif %}
+    aria-label="Slide {{ forloop.counter }}"></button>
     {% endfor %}
   </div>
   <div class="carousel-inner">
     {% for class_obj in classes %}
-      <div class="carousel-item {% if forloop.first %}active{% endif %}">
-        {% if class_obj.image %}
-          <img src="{{ class_obj.image.url }}" class="d-block w-100" alt="{{ class_obj.title }}" style="height: 500px; object-fit: cover;">
+    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+      {% if class_obj.image_url %}
+      <img src="{{ class_obj.image_url }}" class="d-block w-100" alt="{{ class_obj.title }}" style="height: 500px; object-fit: cover;">
+      {% else %}
+      <svg class="bd-placeholder-img d-block w-100" width="100%" height="500"
+      xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false">
+      <rect width="100%" height="100%" fill="#777"/>
+    </svg>
+    {% endif %}
+    <div class="container">
+      <div class="carousel-caption {% if forloop.first %}text-start{% else %}text-end{% endif %}" style="text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);">
+        <h1>{{ class_obj.title }}</h1>
+        <p>{{ class_obj.description|truncatewords:20 }}</p>
+        {% if class_obj.id %}
+        <p><a class="btn btn-lg btn-primary" href="{% url 'classes:class-detail' class_obj.id %}">View Class</a></p>
         {% else %}
-          <svg class="bd-placeholder-img d-block w-100" width="100%" height="500"
-               xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false">
-            <rect width="100%" height="100%" fill="#777"/>
-          </svg>
+        <p>Class not available.</p>
         {% endif %}
-        <div class="container">
-          <div class="carousel-caption {% if forloop.first %}text-start{% else %}text-end{% endif %}" style="text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);">
-            <h1>{{ class_obj.title }}</h1>
-            <p>{{ class_obj.description|truncatewords:20 }}</p>
-            {% if class_obj.id %}
-              <p><a class="btn btn-lg btn-primary" href="{% url 'classes:class-detail' class_obj.id %}">View Class</a></p>
-            {% else %}
-              <p>Class not available.</p>
-            {% endif %}
-          </div>
-        </div>
       </div>
-    {% endfor %}
+    </div>
   </div>
-  <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
-    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Previous</span>
-  </button>
-  <button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
-    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Next</span>
-  </button>
+  {% endfor %}
+</div>
+
+<button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
+  <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+  <span class="visually-hidden">Previous</span>
+</button>
+<button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
+  <span class="carousel-control-next-icon" aria-hidden="true"></span>
+  <span class="visually-hidden">Next</span>
+</button>
 </div>
 
 <div class="container marketing my-5">
   <div class="d-flex justify-content-between align-items-center mb-4">
     {% if request.user.is_authenticated and request.user.role == 'instructor' %}
-      <a href="{% url 'classes:class-create' %}" class="btn btn-primary">Create New Class</a>
+    <a href="{% url 'classes:class-create' %}" class="btn btn-primary">Create New Class</a>
     {% endif %}
   </div>
   <div class="row">
     {% for class_obj in classes %}
-      <div class="col-md-4 mb-0">
-        <div class="card h-100 shadow-sm">
-          {% if class_obj.image %}
-            <img src="{{ class_obj.image.url }}" class="card-img-top" alt="{{ class_obj.title }}" style="height:200px; object-fit: cover;">
+    <div class="col-md-4 mb-0">
+      <div class="card h-100 shadow-sm">
+        {% if class_obj.image_url %}
+        <img src="{{ class_obj.image_url }}" class="card-img-top" alt="{{ class_obj.title }}" style="height:200px; object-fit: cover;">
+        {% else %}
+        <div class="card-img-top" style="background-color:#ddd; height:200px;"></div>
+        {% endif %}
+
+        <div class="card-body py-2">
+          <h5 class="card-title my-0">{{ class_obj.title }}</h5>
+          <p class="card-text my-0">{{ class_obj.description|truncatewords:20 }}</p>
+          <p class="card-text my-0"><strong>Price:</strong> KES: {{ class_obj.price }}</p>
+          <p class="card-text my-0"><small>Instructor: {{ class_obj.instructor.get_full_name }}</small></p>
+
+          {% if request.user.is_superuser or class_obj.show_details %}
+          <p class="card-text my-0"><strong>Schedule:</strong> {{ class_obj.schedule|date:"F j, Y, g:i a" }}</p>
+          <p class="card-text my-0"><strong>Venue:</strong> {{ class_obj.venue_address }}</p>
           {% else %}
-            <div class="card-img-top" style="background-color:#ddd; height:200px;"></div>
+          <p class="card-text my-0"><strong>Schedule:</strong> <em>Purchase to view schedule</em></p>
+          <p class="card-text my-0"><strong>Venue:</strong> <em>Purchase to view venue details</em></p>
           {% endif %}
-          <div class="card-body py-2">
-            <h5 class="card-title my-0">{{ class_obj.title }}</h5>
-            <p class="card-text my-0">{{ class_obj.description|truncatewords:20 }}</p>
-            <p class="card-text my-0"><strong>Price:</strong> KES: {{ class_obj.price }}</p>
-            <p class="card-text my-0"><small>Instructor: {{ class_obj.instructor.get_full_name }}</small></p>
 
-            {% if request.user.is_superuser or class_obj.show_details %}
-              <p class="card-text my-0"><strong>Schedule:</strong> {{ class_obj.schedule|date:"F j, Y, g:i a" }}</p>
-              <p class="card-text my-0"><strong>Venue:</strong> {{ class_obj.venue_address }}</p>
-            {% else %}
-              <p class="card-text my-0"><strong>Schedule:</strong> <em>Purchase to view schedule</em></p>
-              <p class="card-text my-0"><strong>Venue:</strong> <em>Purchase to view venue details</em></p>
-            {% endif %}
-
-            <p class="card-text my-0"><strong>Learners:</strong> {{ class_obj.enrollments.count }}</p>
-            <p class="card-text my-0">
-              <strong>Rating:</strong>
-              {% for _ in "12345"|make_list %}
-                <i class="fas fa-star text-warning"></i>
-              {% endfor %}
-              (4.5/5)
-            </p>
-          </div>
-          <div class="card-footer bg-white border-top-0 py-1">
-            {% if request.user.is_authenticated %}
-              {% if request.user.role == 'learner' %}
-                {% if class_obj.id in purchased_class_ids %}
-                  <a href="{% url 'classes:enrollment-list' %}" class="btn btn-success btn-sm">Join Class</a>
-                {% else %}
-                  <a href="{% url 'payments:cart-list' %}?item={{ class_obj.pk }}" class="btn btn-primary btn-sm">Add to Cart</a>
-                {% endif %}
-              {% elif request.user.role == 'instructor' %}
-                {% if class_obj.id in own_class_ids %}
-                  <a href="{% url 'classes:class-update' class_obj.pk %}" class="btn btn-secondary btn-sm">Manage Class</a>
-                {% else %}
-                  <a href="{% url 'classes:class-detail' class_obj.pk %}" class="btn btn-info btn-sm">View Class</a>
-                {% endif %}
-              {% endif %}
-            {% else %}
-              <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-sm">Login to Purchase</a>
-            {% endif %}
-          </div>
+          <p class="card-text my-0"><strong>Learners:</strong> {{ class_obj.enrollments.count }}</p>
+          <p class="card-text my-0">
+            <strong>Rating:</strong>
+            {% for _ in "12345"|make_list %}
+            <i class="fas fa-star text-warning"></i>
+            {% endfor %}
+            (4.5/5)
+          </p>
+        </div>
+        <div class="card-footer bg-white border-top-0 py-1">
+          {% if request.user.is_authenticated %}
+          {% if request.user.role == 'learner' %}
+          {% if class_obj.id in purchased_class_ids %}
+          <a href="{% url 'classes:enrollment-list' %}" class="btn btn-success btn-sm">Join Class</a>
+          {% else %}
+          <a href="{% url 'payments:cart-list' %}?item={{ class_obj.pk }}" class="btn btn-primary btn-sm">Add to Cart</a>
+          {% endif %}
+          {% elif request.user.role == 'instructor' %}
+          {% if class_obj.id in own_class_ids %}
+          <a href="{% url 'classes:class-update' class_obj.pk %}" class="btn btn-secondary btn-sm">Manage Class</a>
+          {% else %}
+          <a href="{% url 'classes:class-detail' class_obj.pk %}" class="btn btn-info btn-sm">View Class</a>
+          {% endif %}
+          {% endif %}
+          {% else %}
+          <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-sm">Login to Purchase</a>
+          {% endif %}
         </div>
       </div>
+    </div>
     {% empty %}
-      <div class="col-12">
-        <p class="my-0">No classes available at the moment.</p>
-      </div>
+    <div class="col-12">
+      <p class="my-0">No classes available at the moment.</p>
+    </div>
     {% endfor %}
   </div>
 </div>

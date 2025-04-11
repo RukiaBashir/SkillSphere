@@ -16,7 +16,9 @@ class ClassForm(forms.ModelForm):
             'price',
             'schedule',
             'venue_address',  # New field added
-            'image'  # For the thumbnail
+           'local_image',# For the thumbnail
+           'external_image_url',
+  
         ]
         widgets = {
             'schedule': forms.DateTimeInput(

@@ -19,48 +19,48 @@
     <div class="row align-items-center mb-4">
         <div class="col-md-4 text-center">
             {% if user.profile_image %}
-            <img src="{{ user.profile_image.url }}" alt="Profile Picture" class="img-fluid rounded-circle" style="max-width: 200px;">
+            <img src="{{user.profile_image_url }}" alt="Profile Picture" class="img-fluid rounded-circle" style="max-width: 200px;">
             {% else %}
             <img src="{% static 'avatars/user.png' %}" alt="Default Profile Picture" class="img-fluid rounded-circle" style="max-width: 200px;">
             {% endif %}
         </div>
-           
-    <h4>Edit Your Profile</h4>
-    <form id="updateProfileForm" method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form|crispy }}
-        <div class="d-flex align-items-center">
-            <button type="button" id="requestOTPButton" class="btn btn-outline-info me-2">Request OTP</button>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmUpdateModal">
-                Update Profile
-            </button>
-        </div>
-    </form>
+        
+        <h4>Edit Your Profile</h4>
+        <form id="updateProfileForm" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <div class="d-flex align-items-center">
+                <button type="button" id="requestOTPButton" class="btn btn-outline-info me-2">Request OTP</button>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmUpdateModal">
+                    Update Profile
+                </button>
+            </div>
+        </form>
 
-    <!-- Confirm Update Modal -->
-    <div class="modal fade" id="confirmUpdateModal" tabindex="-1" aria-labelledby="confirmUpdateModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-       <div class="modal-content">
-           <div class="modal-header">
-               <h5 class="modal-title" id="confirmUpdateModalLabel">Confirm Update</h5>
-               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-           </div>
-           <div class="modal-body">
-               Are you sure you want to update your profile with these changes?
-           </div>
-           <div class="modal-footer">
-               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-               <button type="button" id="confirmUpdateButton" class="btn btn-primary">Yes, Update</button>
-           </div>
-       </div>
-      </div>
-    </div>
-</div>
+        <!-- Confirm Update Modal -->
+        <div class="modal fade" id="confirmUpdateModal" tabindex="-1" aria-labelledby="confirmUpdateModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+             <div class="modal-content">
+                 <div class="modal-header">
+                     <h5 class="modal-title" id="confirmUpdateModalLabel">Confirm Update</h5>
+                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                 </div>
+                 <div class="modal-body">
+                     Are you sure you want to update your profile with these changes?
+                 </div>
+                 <div class="modal-footer">
+                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                     <button type="button" id="confirmUpdateButton" class="btn btn-primary">Yes, Update</button>
+                 </div>
+             </div>
+         </div>
+     </div>
+ </div>
 
 
-{% if user.role == "instructor" %}
-<h3 class="mt-5">Your Classes</h3>
-<div class="row">
+ {% if user.role == "instructor" %}
+ <h3 class="mt-5">Your Classes</h3>
+ <div class="row">
     {% for class_obj in user.class_set.all %}
     <div class="col-md-4 mb-4">
         <div class="card">
@@ -85,20 +85,20 @@
 </div>
 
 <script>
-document.getElementById('confirmUpdateButton').addEventListener('click', function(){
-    document.getElementById('updateProfileForm').submit();
-});
+    document.getElementById('confirmUpdateButton').addEventListener('click', function(){
+        document.getElementById('updateProfileForm').submit();
+    });
 
 // AJAX request to trigger OTP sending
-document.getElementById('requestOTPButton').addEventListener('click', function(){
-    fetch("{% url 'accounts:request-otp' %}")
-    .then(response => response.json())
-    .then(data => {
-        alert(data.message);
-    })
-    .catch(error => {
-        alert("Error sending OTP: " + error);
+    document.getElementById('requestOTPButton').addEventListener('click', function(){
+        fetch("{% url 'accounts:request-otp' %}")
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+        })
+        .catch(error => {
+            alert("Error sending OTP: " + error);
+        });
     });
-});
 </script>
 {% endblock %}

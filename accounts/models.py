@@ -64,7 +64,9 @@ class SkillUser(AbstractUser):
     birth_date = models.DateField(blank=True, null=True)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
-    profile_image = models.ImageField(upload_to='profiles/', blank=True, null=True)
+    local_image = models.ImageField(upload_to='profiles/', blank=True, null=True)
+    external_image_url = models.URLField(blank=True, null=True)
+   
 
     # Use the custom user manager
     objects = CustomUserManager()
@@ -78,6 +80,14 @@ class SkillUser(AbstractUser):
 
     def get_absolute_url(self):
         return reverse('user_profile', kwargs={'pk': self.pk})  # Example URL, adjust as needed
+    @property
+    def profile_image_url(self):
+        """Return whichever image is available: local first, then external, else default."""
+        if self.local_image:
+            return self.local_image.url
+        elif self.external_image_url:
+            return self.external_image_url
+        return static('img/avatars/user.png')  # Fallback image path in static folder
 
 
 class ContactQuerySet(models.query.QuerySet):
