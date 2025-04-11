@@ -107,8 +107,8 @@ def class_create(request):
                     content_type = image_file.content_type
 
                     with open(local_image_path, 'rb') as f:
-                        f.name = image_file.name  # Ensure file has a name for upload
-                        public_url = upload_to_supabase(f, folder='class_thumbnails', content_type=content_type)
+                        public_url = upload_to_supabase(f, folder='class_thumbnails', filename=image_file.name,
+                                                        content_type=content_type)
 
                     new_class.external_image_url = public_url
                     new_class.local_image = None  # Optionally remove local image
