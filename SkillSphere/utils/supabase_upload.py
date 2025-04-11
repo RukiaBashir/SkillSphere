@@ -1,15 +1,32 @@
+import uuid
+
 from supabase import create_client
 from django.conf import settings
 
+from SkillSphere.settings import SUPABASE_URL, SUPABASE_KEY
+
 supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
-def upload_to_supabase(file, filename):
-    path = f"{filename}"
-    try:
-        # Upload to the bucket
-        supabase.storage.from_(settings.SUPABASE_BUCKET).upload(path, file, {"cacheControl": "3600", "upsert": True})
-        # Get the public URL
-        return supabase.storage.from_(settings.SUPABASE_BUCKET).get_public_url(path)
-    except Exception as e:
-        print("Upload error:", e)
-        return None
+
+def upload_to_supabase(file, folder='uploads'):
+    """
+    Uploads a file to a specific folder in Supabase Storage and returns the public URL.
+    :param file: Django UploadedFile object
+    :param folder: Sub-folder like 'class_thumbnails' or 'profile_images'
+    :return: public URL of uploaded file
+    """
+    _supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+    # Generate unique filename to avoid collisions
+    extension = file.name.split('.')[-1]
+    unique_filename = f"{uuid.uuid4()}.{extension}"
+    file_path = f"{folder}/{unique_filename}"
+
+    # Upload the file
+    _supabase.storage.from_('media').upload(file_path, file, {
+        "content-type": file.content_type
+    })
+
+    # Return public URL
+    public_url = _supabase.storage.from_('media').get_public_url(file_path)
+    return public_url

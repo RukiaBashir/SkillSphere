@@ -108,7 +108,7 @@ class UserProfileUpdateForm(forms.ModelForm):
         user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-        # Prepopulate account fields from the user object
+        # Pre-populate account fields from the user object
         self.fields['username'].initial = user.username if user else ''
         self.fields['email'].initial = user.email if user else ''
 
@@ -127,7 +127,7 @@ class UserProfileUpdateForm(forms.ModelForm):
                 'placeholder': 'YYYY-MM-DD'
             })
 
-        # Prepopulate other fields with current values or placeholders.
+        # Pre-populate other fields with current values or placeholders.
         for field in ['first_name', 'last_name', 'phone_number']:
             current_value = getattr(self.instance, field, None)
             if current_value:
@@ -175,6 +175,12 @@ class UserProfileUpdateForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+
+    def clean_external_image_url(self):
+        url = self.cleaned_data.get('external_image_url')
+        if url and not url.startswith('http'):
+            raise ValidationError("Please enter a valid URL.")
+        return url
 
 
 class BecomeInstructorForm(forms.Form):
