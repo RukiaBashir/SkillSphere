@@ -7,6 +7,7 @@ from django.urls import reverse_lazy
 from django.utils.timezone import now
 from django.views.generic import DeleteView, UpdateView
 
+from SkillSphere.utils.supabase_upload import upload_to_supabase
 from payments.models import CartItem
 from .forms import ClassForm, SkillCategoryForm
 from .models import Class, SkillCategory, Enrollment
