@@ -13,7 +13,6 @@ from .forms import ClassForm, SkillCategoryForm
 from .models import Class, SkillCategory, Enrollment
 
 
-
 def class_list(request):
     classes = Class.objects.all()
     purchased_class_ids = []
@@ -34,9 +33,9 @@ def class_list(request):
     # Annotate visibility
     for class_obj in classes:
         class_obj.show_details = (
-            request.user.is_superuser or
-            class_obj.id in purchased_class_ids or
-            class_obj.id in own_class_ids
+                request.user.is_superuser or
+                class_obj.id in purchased_class_ids or
+                class_obj.id in own_class_ids
         )
 
     context = {
@@ -45,7 +44,6 @@ def class_list(request):
         'own_class_ids': own_class_ids,
     }
     return render(request, 'class_list.html', context)
-
 
 
 def class_detail(request, pk):
