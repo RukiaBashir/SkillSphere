@@ -3,16 +3,16 @@ import uuid
 from supabase import create_client
 from django.conf import settings
 
-from SkillSphere.settings import SUPABASE_URL, SUPABASE_KEY
+from SkillSphere.settings import SUPABASE_URL, SUPABASE_KEY, SUPABASE_SERVICE_ROLE_KEY
 
-supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
 
 
 def upload_to_supabase(file, folder='uploads', filename=None, content_type='application/octet-stream'):
     """
     Uploads a file to Supabase Storage and returns the public URL.
     """
-    _supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+    _supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
     # Use provided filename or generate a unique one
     extension = (filename or file.name).split('.')[-1]

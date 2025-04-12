@@ -28,7 +28,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY SETTINGS
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
-
 AUTH_USER_MODEL = 'accounts.SkillUser'
 LOGIN_URL = '/login/'
 LOGIN_URL_REDIRECT = '/'
@@ -138,4 +137,5 @@ TWILIO_VERIFY_SERVICE_SID = os.environ.get('TWILIO_VERIFY_SERVICE_SID')
 
 SUPABASE_URL = os.environ.get('SUPABASE_URL')
 SUPABASE_KEY = os.environ.get('SUPABASE_KEY')
+SUPABASE_SERVICE_ROLE_KEY = os.environ.get('SUPABASE_SERVICE_ROLE_KEY')
 SUPABASE_BUCKET = "media"  # the bucket you created
