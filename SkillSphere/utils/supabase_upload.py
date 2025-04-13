@@ -5,6 +5,7 @@ from django.conf import settings
 # Global Supabase client
 supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
 
+
 def upload_to_supabase(file, folder='uploads', filename=None, content_type='application/octet-stream'):
     """
     Uploads a file to Supabase Storage and returns the public URL.

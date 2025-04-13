@@ -52,12 +52,15 @@ class Class(models.Model):
         else:
             self.status = 'completed'
         self.save(update_fields=['status'])
+
     @property
     def image_url(self):
-        """Return whichever image is available: local first, then external."""
-        if self.local_image:
+        if self.external_image_url:
+            return self.external_image_url
+        elif self.local_image:
             return self.local_image.url
-        return self.external_image_url
+        else:
+            return None
 
 
 
