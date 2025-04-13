@@ -13,7 +13,7 @@
         {{ form|crispy }}
 
         <!-- Display current image preview -->
-        {% if class_obj.get_image_url %}
+        {% if class_obj.external_image_url  %}
         <div class="mb-3">
           <label class="form-label">Current Image:</label>
           <div>

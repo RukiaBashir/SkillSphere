@@ -6,8 +6,8 @@
 {% block content %}
   <div class="container my-5">
     {% comment %} Display thumbnail if available {% endcomment %}
-   {% if class_obj.get_image_url %}
-  <img src="{{ class_obj.get_image_url }}" class="d-block w-100" alt="{{ class_obj.title }}" style="height: 500px; object-fit: cover;">
+   {% if class_obj.external_image_url  %}
+  <img src="{{ class_obj.external_image_url  }}" class="d-block w-100" alt="{{ class_obj.title }}" style="height: 500px; object-fit: cover;">
 {% else %}
   <svg class="bd-placeholder-img d-block w-100" width="100%" height="500"
     xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false">
