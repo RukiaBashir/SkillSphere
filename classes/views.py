@@ -83,6 +83,7 @@ def image_upload_preview(request):
 
     return render(request, 'classes/image_upload_preview.html', {'public_url': public_url})
 
+
 @login_required
 def class_create(request):
     if request.user.role != 'instructor':
@@ -120,6 +121,7 @@ def class_create(request):
         form = ClassForm()
 
     return render(request, 'classes/class_create.html', {'form': form})
+
 
 class ClassDeleteView(LoginRequiredMixin, DeleteView):
     model = Class
@@ -169,7 +171,6 @@ def class_update(request, pk):
         form = ClassForm(instance=class_obj)
 
     return render(request, 'classes/class_update.html', {'form': form, 'class_obj': class_obj})
-
 
 
 # Instructor dashboard to manage classes
