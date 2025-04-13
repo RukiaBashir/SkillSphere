@@ -65,14 +65,14 @@
     <div class="col-md-4 mb-4">
         <div class="card">
           {% if class_obj.image %}
-          <img src="{{ class_obj.image.url }}" class="card-img-top" alt="{{ class_obj.title }}" style="height:200px; object-fit: cover;">
+          <img src="{{ class_obj.image_url }}" class="card-img-top" alt="{{ class_obj.title }}" style="height:200px; object-fit: cover;">
           {% else %}
           <div class="card-img-top bg-secondary" style="height:200px;"></div>
           {% endif %}
           <div class="card-body">
             <h5 class="card-title">{{ class_obj.title }}</h5>
             <p class="card-text">{{ class_obj.description|truncatewords:15 }}</p>
-            <a href="{{ class_obj.get_absolute_url }}" class="btn btn-outline-primary btn-sm">View Class</a>
+            <a href="{{ 'classes:class-detail' class_obj.id }}" class="btn btn-outline-primary btn-sm">View Class</a>
         </div>
     </div>
 </div>
