@@ -36,6 +36,7 @@ def upload_to_supabase(file, folder='uploads', filename=None, content_type='appl
         # Safely extract the public URL
         if hasattr(public_url_response, 'publicURL') and public_url_response.publicURL:
             public_url = public_url_response.publicURL
+            print(public_url)
         elif isinstance(public_url_response, dict) and 'publicURL' in public_url_response:
             public_url = public_url_response['publicURL']
         else:
