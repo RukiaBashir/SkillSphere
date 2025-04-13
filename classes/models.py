@@ -35,7 +35,8 @@ class Class(models.Model):
     schedule = models.DateTimeField()
     venue_address = models.CharField(max_length=255, blank=True, null=True)
     instructor = models.ForeignKey(SkillUser, on_delete=models.CASCADE, limit_choices_to={'role': 'instructor'})
-    category = models.ForeignKey(SkillCategory, on_delete=models.SET_NULL, null=True, blank=True, related_name='classes')
+    category = models.ForeignKey(SkillCategory, on_delete=models.SET_NULL, null=True, blank=True,
+                                 related_name='classes')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='coming_soon')
     is_approved = models.BooleanField(default=False)  # For pending course approvals
     is_active = models.BooleanField(default=True)
@@ -60,7 +61,6 @@ class Class(models.Model):
         elif self.local_image:
             return self.local_image.url
         return None
-
 
 
 class Enrollment(models.Model):
