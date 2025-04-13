@@ -18,16 +18,15 @@
     {% for class_obj in classes %}
     <div class="carousel-item {% if forloop.first %}active{% endif %}">
       {% comment %} Display thumbnail if available {% endcomment %}
-      {% if class_obj.get_image_url  %}
-      <img src="{{ class_obj.get_image_url  }}" class="d-block w-100" alt="{{ class_obj.title }}" style="height: 500px; object-fit: cover;">
-      {% elif class_obj.local_image %}
-      <img src="{{ class_obj.get_image_url  }}" class="d-block w-100" alt="{{ class_obj.title }}" style="height: 500px; object-fit: cover;">
-      {% else %}
-      <svg class="bd-placeholder-img d-block w-100" width="100%" height="500"
-      xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false">
-      <rect width="100%" height="100%" fill="#777"/>
-    </svg>
-    {% endif %}
+      {% if class_obj.get_image_url %}
+  <img src="{{ class_obj.get_image_url }}" class="d-block w-100" alt="{{ class_obj.title }}" style="height: 500px; object-fit: cover;">
+{% else %}
+  <svg class="bd-placeholder-img d-block w-100" width="100%" height="500"
+    xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false">
+    <rect width="100%" height="100%" fill="#777"/>
+  </svg>
+{% endif %}
+
     <div class="container">
       <div class="carousel-caption {% if forloop.first %}text-start{% else %}text-end{% endif %}" style="text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);">
         <h1>{{ class_obj.title }}</h1>
