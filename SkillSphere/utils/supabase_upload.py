@@ -33,8 +33,7 @@ def upload_to_supabase(file, folder='uploads', filename=None, content_type='appl
             raise Exception(f"Upload failed: {upload_response.error.message}")
 
         # Get public URL
-        public_url_response = supabase.storage.from_("media").create_signed_url(file_path,
-                                                                                expires_in=3600 * 24 * 7)  # 7 days expiry
+        public_url_response = supabase.storage.from_("media").create_signed_url(file_path, expires_in=3600*24*365*10)  # 10 years
 
         # Safely extract the public URL
         if hasattr(public_url_response, 'publicURL') and public_url_response.publicURL:
