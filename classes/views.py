@@ -125,7 +125,7 @@ def class_create(request):
 
 class ClassDeleteView(LoginRequiredMixin, DeleteView):
     model = Class
-    template_name = 'class_confirm_delete.html'
+    template_name = 'class_delete.html'
     success_url = reverse_lazy('classes:class-list')
 
     def get_queryset(self):
