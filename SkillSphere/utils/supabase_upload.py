@@ -28,19 +28,21 @@ def upload_to_supabase(file, folder='uploads', filename=None, content_type='appl
             {"content-type": content_type}
         )
 
+
+
         # Check for an error in the response
         if hasattr(upload_response, 'error') and upload_response.error:
             raise Exception(f"Upload failed: {upload_response.error.message}")
 
         # Get public URL
-        public_url_response = supabase.storage.from_("media").create_signed_url(file_path, expires_in=3600*24*365*10)  # 10 years
+        public_url_response = supabase.storage.from_("public").get_public_url(file_path)
 
         # Safely extract the public URL
         if hasattr(public_url_response, 'publicURL') and public_url_response.publicURL:
             public_url = public_url_response.publicURL
             print(public_url)
         elif isinstance(public_url_response, dict) and 'publicURL' in public_url_response:
-            public_url = public_url_response['signedURL']
+            public_url = public_url_response['publicURL']
         else:
             # Construct it manually if response didn't give it
             public_url = f"{settings.SUPABASE_URL}/storage/v1/object/public/media/{file_path}"
