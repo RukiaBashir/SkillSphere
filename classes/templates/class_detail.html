@@ -4,89 +4,92 @@
 {% load l10n %}
 
 {% block content %}
-<div class="container my-5">
-  {% if messages %}
-  {% for message in messages %}
-  <div class="alert alert-dismissible fade show {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %}" role="alert">
-    {{ message }}
-  </div>
-  {% endfor %}
-  {% endif %}
+  <div class="container my-5">
+    {% comment %} Display thumbnail if available {% endcomment %}
+   {% if class_obj.get_image_url  %}
+      <img src="{{ class_obj.get_image_url  }}" class="d-block w-100" alt="{{ class_obj.title }}" style="height: 500px; object-fit: cover;">
+      {% elif class_obj.local_image %}
+      <img src="{{ class_obj.get_image_url  }}" class="d-block w-100" alt="{{ class_obj.title }}" style="height: 500px; object-fit: cover;">
+      {% else %}
+      <svg class="bd-placeholder-img d-block w-100" width="100%" height="500"
+      xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false">
+      <rect width="100%" height="100%" fill="#777"/>
+    </svg>
+    {% endif %}
 
-  {% if class_obj.external_image_url %}
-  <img src="{{ class_obj.external_image_url }}" class="d-block w-100" alt="{{ class_obj.title }}" style="height: 500px; object-fit: cover;">
-  {% elif class_obj.local_image %}
-  <img src="{{ class_obj.local_image.url }}" class="d-block w-100" alt="{{ class_obj.title }}" style="height: 500px; object-fit: cover;">
-  {% else %}
-  <!-- fallback placeholder svg -->
-  {% endif %}
+    <h2>{{ class_obj.title }}</h2>
+    <p><strong>Instructor:</strong> {{ class_obj.instructor }}</p>
+    <p><strong>Skill Category:</strong> {{ class_obj.skill_category.name }}</p>
+    <p><strong>Description:</strong> {{ class_obj.description }}</p>
+    <p><strong>Price:</strong> KES: {{ class_obj.price }}</p>
+    <p><strong>Schedule:</strong> {{ class_obj.schedule|date:"F j, Y, g:i a" }}</p>
+    <p><strong>Available Slots:</strong> {{ class_obj.available_slots }}</p>
+    
+    {% if request.user.is_authenticated %}
+      {% if request.user.role == 'instructor' %}
+        {% if request.user == class_obj.instructor %}
+          <a href="{% url 'classes:class-update' class_obj.pk %}" class="btn btn-primary">Edit</a> |
+          <a href="#" class="btn btn-danger delete-btn" data-url="{% url 'classes:class-delete' class_obj.pk %}">Delete</a>
+        {% else %}
+          <p class="text-muted">You do not have permission to manage this class.</p>
+        {% endif %}
+      {% elif request.user.role == 'learner' %}
+        {% comment %}
+          Check in order:
+          1. If purchased, show Join Class
+          2. Else if already in cart, show Go to Cart
+          3. Else, show payment form
+        {% endcomment %}
+        {% if class_obj.id in purchased_class_ids %}
+          <a href="{{ class_obj.get_classroom_url }}" class="btn btn-success">Join Class</a>
+        {% elif class_obj.id in cart_class_ids %}
+          <a href="{% url 'payments:cart-list' %}" class="btn btn-warning">Go to Cart</a>
+        {% else %}
+        <p>Owned</p>
+        {% endif %}
+      {% endif %}
+    {% else %}
+      <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-sm">Login to Purchase</a>
+    {% endif %}
 
-  <h2>{{ class_obj.title }}</h2>
-  <p><strong>Instructor:</strong> {{ class_obj.instructor }}</p>
-  <p><strong>Skill Category:</strong> {{ class_obj.skill_category.name }}</p>
-  <p><strong>Description:</strong> {{ class_obj.description }}</p>
-  <p><strong>Price:</strong> KES: {{ class_obj.price }}</p>
-  <p><strong>Schedule:</strong> {{ class_obj.schedule|date:"F j, Y, g:i a" }}</p>
-  <p><strong>Available Slots:</strong> {{ class_obj.available_slots }}</p>
-
-  {% if request.user.is_authenticated %}
-  {% if request.user.role == 'instructor' %}
-  {% if request.user == class_obj.instructor %}
-  <a href="{% url 'classes:class-update' class_obj.pk %}" class="btn btn-primary">Edit</a>
-  <a href="#" class="btn btn-danger delete-btn" data-url="{% url 'classes:class-delete' class_obj.pk %}">Delete</a>
-  {% else %}
-  <p class="text-muted">You do not have permission to manage this class.</p>
-  {% endif %}
-
-  {% elif request.user.role == 'learner' %}
-  {% if purchased %}
-  <a href="{{ class_obj.get_classroom_url }}" class="btn btn-success">Join Class</a>
-  {% else %}
-  <a href="{% url 'payments:class-payment' class_obj.pk %}" class="btn btn-primary">Purchase Class</a>
-  {% endif %}
-  {% endif %}
-  {% else %}
-  <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-sm">Login to Purchase</a>
-  {% endif %}
-
-  <!-- Delete Confirmation Modal -->
-  <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          Are you sure you want to delete this class?
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-          <form id="delete-form" method="post" action="">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger">Delete</button>
-          </form>
+    <!-- Delete Confirmation Modal (for instructors) -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            Are you sure you want to delete this class?
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <form id="delete-form" method="post" action="">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- JavaScript to handle delete modal -->
-  <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      const deleteButtons = document.querySelectorAll(".delete-btn");
-      const deleteForm = document.getElementById("delete-form");
+    <!-- JavaScript to trigger the delete modal -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function() {
+        const deleteButtons = document.querySelectorAll(".delete-btn");
+        const deleteForm = document.getElementById("delete-form");
 
-      deleteButtons.forEach(function(button) {
-        button.addEventListener("click", function(e) {
-          e.preventDefault();
-          deleteForm.action = button.getAttribute("data-url");
-          $('#deleteModal').modal('show');
+        deleteButtons.forEach(function(button) {
+          button.addEventListener("click", function(e) {
+            e.preventDefault();
+            deleteForm.action = button.getAttribute("data-url");
+            $('#deleteModal').modal('show');
+          });
         });
       });
-    });
-  </script>
-</div>
+    </script>
+  </div>
 {% endblock %}
