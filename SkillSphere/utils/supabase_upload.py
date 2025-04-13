@@ -21,18 +21,20 @@ def upload_to_supabase(file, folder='uploads', filename=None, content_type='appl
 
     try:
         # Upload file content to Supabase Storage
-        upload_response = supabase.storage.from_("media").upload(
+
+        upload_response = supabase.storage.from_("public").upload(
             file_path,
             file_bytes,
             {"content-type": content_type}
         )
+
 
         # Check for an error in the response
         if hasattr(upload_response, 'error') and upload_response.error:
             raise Exception(f"Upload failed: {upload_response.error.message}")
 
         # Get public URL
-        public_url_response = supabase.storage.from_("media").get_public_url(file_path)
+        public_url_response = supabase.storage.from_("public").get_public_url(file_path)
 
         # Safely extract the public URL
         if hasattr(public_url_response, 'publicURL') and public_url_response.publicURL:
