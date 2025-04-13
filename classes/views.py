@@ -7,7 +7,7 @@ from django.urls import reverse_lazy
 from django.utils.timezone import now
 from django.views.generic import DeleteView, UpdateView
 
-from SkillSphere.utils.supabase_upload import upload_to_supabase
+from SkillSphere.utils.supabase_upload import upload_to_supabase_s3
 from payments.models import CartItem
 from .forms import ClassForm, SkillCategoryForm
 from .models import Class, SkillCategory, Enrollment
@@ -106,8 +106,12 @@ def class_create(request):
                     content_type = image_file.content_type
 
                     with open(local_image_path, 'rb') as f:
-                        public_url = upload_to_supabase(f, folder='class_thumbnails', filename=image_file.name,
-                                                        content_type=content_type)
+                        public_url = upload_to_supabase_s3(
+                            f,
+                            folder='class_thumbnails',
+                            filename=image_file.name,
+                            content_type=content_type
+                        )
 
                     new_class.external_image_url = public_url
                     new_class.local_image = None  # Optionally remove local image

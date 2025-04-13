@@ -1,28 +1,32 @@
 import uuid
-
-from supabase import create_client
+import boto3
 from django.conf import settings
 
-from SkillSphere.settings import SUPABASE_URL, SUPABASE_KEY, SUPABASE_SERVICE_ROLE_KEY
+# Create S3 client
+s3_client = boto3.client(
+    's3',
+    endpoint_url=settings.SUPABASE_S3_ENDPOINT_URL,
+    aws_access_key_id=settings.SUPABASE_ACCESS_KEY,
+    aws_secret_access_key=settings.SUPABASE_SECRET_KEY
+)
 
-supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
 
-
-def upload_to_supabase(file, folder='uploads', filename=None, content_type='application/octet-stream'):
+def upload_to_supabase_s3(file, folder='uploads', filename=None, content_type='application/octet-stream'):
     """
-    Uploads a file to Supabase Storage and returns the public URL.
+    Uploads a file to Supabase Storage (S3-compatible) and returns its public URL.
     """
-    _supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
-
-    # Use provided filename or generate a unique one
     extension = (filename or file.name).split('.')[-1]
     unique_filename = f"{uuid.uuid4()}.{extension}"
-    file_path = f"{folder}/{unique_filename}"
+    key = f"{folder}/{unique_filename}"
 
-    _supabase.storage.from_('media').upload(file_path, file, {
-        "content-type": content_type
-    })
+    # Upload file
+    s3_client.upload_fileobj(
+        file,
+        settings.SUPABASE_BUCKET,
+        key,
+        ExtraArgs={"ContentType": content_type, "ACL": "public-read"}  # 'public-read' if your bucket is public
+    )
 
-    public_url = _supabase.storage.from_('media').get_public_url(file_path)
+    # Construct public URL manually
+    public_url = f"{settings.SUPABASE_S3_ENDPOINT_URL}/{settings.SUPABASE_BUCKET}/{key}"
     return public_url
-
