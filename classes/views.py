@@ -1,10 +1,8 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
-from django.utils.timezone import now
 from django.views.generic import DeleteView, UpdateView
 
 from SkillSphere.utils.supabase_upload import upload_to_supabase_s3
