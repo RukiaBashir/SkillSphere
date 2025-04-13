@@ -54,13 +54,12 @@ class Class(models.Model):
         self.save(update_fields=['status'])
 
     @property
-    def image_url(self):
+    def get_image_url(self):
         if self.external_image_url:
             return self.external_image_url
         elif self.local_image:
             return self.local_image.url
-        else:
-            return None
+        return None
 
 
 
