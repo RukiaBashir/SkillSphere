@@ -85,60 +85,41 @@ def image_upload_preview(request):
 
 @login_required
 def class_create(request):
-    """
-    Allow only paid instructors (or admin) to create classes.
-    If an instructor hasn't paid, redirect them to the instructor registration page.
-    """
-    if request.user.role != 'instructor' and not request.user.is_superuser:
-        messages.error(request, "You are not authorized to create a class.")
+    if request.user.role != 'instructor':
+        messages.error(request, "Only instructors can create classes.")
         return redirect('classes:class-list')
-
-    # Admins can create classes freely
-    if not request.user.is_superuser:
-        instructor_payment = CartItem.objects.filter(
-            user=request.user,
-            class_booking__isnull=True,  # Instructor registration fee
-            payment_status='completed'
-        ).exists()
-
-        if not instructor_payment:
-            messages.warning(request, "You must complete instructor registration before creating a class.")
-            return redirect('accounts:become-instructor')  # Redirect to instructor registration page
 
     if request.method == 'POST':
         form = ClassForm(request.POST, request.FILES)
         if form.is_valid():
             new_class = form.save(commit=False)
-            new_class.instructor = request.user  # Auto-assign current user as instructor
-            image_file = request.FILES.get('local_image')
+            new_class.instructor = request.user  # assign instructor
 
-            # Handle file upload and synchronization with Supabase
             image_file = request.FILES.get('local_image')
             if image_file:
-                # First, assign the image locally (if needed)
-                new_class.local_image = image_file
-                new_class.save()
-
                 try:
                     content_type = image_file.content_type
-                    public_url = upload_to_supabase(image_file, folder='class_thumbnails', filename=image_file.name,
-                                                    content_type=content_type)
+                    public_url = upload_to_supabase(
+                        image_file,
+                        folder='class_thumbnails',
+                        filename=image_file.name,
+                        content_type=content_type
+                    )
                     new_class.external_image_url = public_url
-                    new_class.local_image = None  # Optionally clear the local image field if using the external URL
-                    new_class.save()
+                    new_class.local_image = None
+                    messages.success(request, "Image uploaded successfully.")
                 except Exception as e:
                     messages.error(request, f"Image upload to Supabase failed: {e}")
-                    # Optionally, keep the local image as a fallback
             else:
-                new_class.save()
+                messages.info(request, "No image uploaded.")
 
+            new_class.save()
             messages.success(request, "Class created successfully.")
             return redirect('classes:class-detail', pk=new_class.pk)
     else:
         form = ClassForm()
 
-    return render(request, 'class_form.html', {'form': form})
-
+    return render(request, 'classes/class_create.html', {'form': form})
 
 class ClassDeleteView(LoginRequiredMixin, DeleteView):
     model = Class
@@ -162,6 +143,7 @@ def class_update(request, pk):
         form = ClassForm(request.POST, request.FILES, instance=class_obj)
         if form.is_valid():
             updated_class = form.save(commit=False)
+
             image_file = request.FILES.get('local_image')
             if image_file:
                 try:
@@ -173,11 +155,12 @@ def class_update(request, pk):
                         content_type=content_type
                     )
                     updated_class.external_image_url = public_url
-                    updated_class.local_image = None  # Remove local image
+                    updated_class.local_image = None
                     messages.success(request, "Image uploaded successfully.")
-
                 except Exception as e:
                     messages.error(request, f"Image upload to Supabase failed: {e}")
+            else:
+                messages.info(request, "No new image uploaded.")
 
             updated_class.save()
             messages.success(request, "Class updated successfully.")
@@ -186,6 +169,7 @@ def class_update(request, pk):
         form = ClassForm(instance=class_obj)
 
     return render(request, 'classes/class_update.html', {'form': form, 'class_obj': class_obj})
+
 
 
 # Instructor dashboard to manage classes

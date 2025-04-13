@@ -65,8 +65,8 @@
     <div class="col-md-4 mb-4">
         <div class="card">
            
-           {% if class_obj.image_url %}
-           <img src="{{ class_obj.image_url }}" class="card-img-top" alt="{{ class_obj.title }}" style="height:200px; object-fit: cover;">
+           {% if class_obj.get_image_url  %}
+           <img src="{{ class_obj.get_image_url  }}" class="card-img-top" alt="{{ class_obj.title }}" style="height:200px; object-fit: cover;">
            {% else %}
            <div class="card-img-top bg-secondary" style="height:200px;"></div>
            {% endif %}

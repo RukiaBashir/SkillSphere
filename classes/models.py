@@ -60,7 +60,7 @@ class Class(models.Model):
             return self.external_image_url
         elif self.local_image:
             return self.local_image.url
-        return None
+        return self.local_image.url
 
 
 class Enrollment(models.Model):
