@@ -23,7 +23,7 @@ from twilio.base.exceptions import TwilioRestException
 from twilio.rest import Client
 
 from SkillSphere import settings
-from SkillSphere.utils.supabase_upload import upload_to_supabase_s3
+from SkillSphere.utils.supabase_upload import upload_to_supabase
 from accounts.models import SkillUser, Feedback, SiteConfiguration
 from classes.models import Class, Enrollment, SkillCategory
 from notifications.models import Notification
@@ -125,7 +125,7 @@ class UserProfileUpdateView(LoginRequiredMixin, UpdateView):
         # Handle Supabase upload for profile_image
         image_file = self.request.FILES.get('profile_image')
         if image_file:
-            public_url = upload_to_supabase_s3(image_file, folder='profile_images')
+            public_url = upload_to_supabase(image_file, folder='profile_images')
             form.instance.external_profile_image_url = public_url
             form.instance.profile_image = None  # Optionally clear local field
         messages.success(self.request, "Profile updated successfully!")
