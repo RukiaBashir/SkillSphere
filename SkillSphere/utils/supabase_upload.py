@@ -12,6 +12,7 @@ def upload_to_supabase(file, folder='uploads', filename=None, content_type='appl
     """
     # Read file content into bytes
     file_bytes = file.read()
+    file.seek(0)  # Reset pointer so Django can use it later
 
     # Generate unique filename
     extension = (filename or file.name).split('.')[-1]

@@ -85,16 +85,17 @@ def image_upload_preview(request):
 
 
 @login_required
+@login_required
 def class_create(request):
-    if request.user.role != 'instructor':
-        messages.error(request, "Only instructors can create classes.")
+    if request.user.role != 'instructor' and not request.user.is_superuser:
+        messages.error(request, "You are not authorized to create a class.")
         return redirect('classes:class-list')
 
     if request.method == 'POST':
         form = ClassForm(request.POST, request.FILES)
         if form.is_valid():
             new_class = form.save(commit=False)
-            new_class.instructor = request.user  # assign instructor
+            new_class.instructor = request.user
 
             image_file = request.FILES.get('local_image')
             if image_file:
@@ -107,12 +108,11 @@ def class_create(request):
                         content_type=content_type
                     )
                     new_class.external_image_url = public_url
-                    new_class.local_image = None
+                    new_class.local_image = None  # Remove local file ref
+                    request.FILES.pop('local_image')  # Prevent stream issue
                     messages.success(request, "Image uploaded successfully.")
                 except Exception as e:
                     messages.error(request, f"Image upload to Supabase failed: {e}")
-            else:
-                messages.info(request, "No image uploaded.")
 
             new_class.save()
             messages.success(request, "Class created successfully.")
@@ -134,6 +134,7 @@ class ClassDeleteView(LoginRequiredMixin, DeleteView):
 
 
 # Update an existing class (for instructors only)
+
 @login_required
 def class_update(request, pk):
     class_obj = get_object_or_404(Class, pk=pk)
@@ -146,24 +147,22 @@ def class_update(request, pk):
         if form.is_valid():
             updated_class = form.save(commit=False)
 
-            # Check if clear image was requested
-            if 'clear_image' in request.POST:
-                updated_class.local_image.delete(save=False)
-                updated_class.external_image_url = None
-
-            # Handle new image upload to Supabase
             image_file = request.FILES.get('local_image')
             if image_file:
-                content_type = image_file.content_type
-                public_url = upload_to_supabase(
-                    image_file,
-                    folder='class_thumbnails',
-                    filename=image_file.name,
-                    content_type=content_type
-                )
-                updated_class.external_image_url = public_url
-                updated_class.local_image = None
-                messages.success(request, "Image uploaded successfully.")
+                try:
+                    content_type = image_file.content_type
+                    public_url = upload_to_supabase(
+                        image_file,
+                        folder='class_thumbnails',
+                        filename=image_file.name,
+                        content_type=content_type
+                    )
+                    updated_class.external_image_url = public_url
+                    updated_class.local_image = None
+                    request.FILES.pop('local_image')
+                    messages.success(request, "Image updated and uploaded successfully.")
+                except Exception as e:
+                    messages.error(request, f"Image upload to Supabase failed: {e}")
 
             updated_class.save()
             messages.success(request, "Class updated successfully.")
