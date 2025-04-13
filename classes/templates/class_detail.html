@@ -5,6 +5,13 @@
 
 {% block content %}
   <div class="container my-5">
+        {% if messages %}
+     {% for message in messages %}
+     <div class="alert alert-dismissible fade show {% if message.tags == 'error' %}alert-danger{% elif message.tags == 'success' %}alert-success{% else %}alert-info{% endif %}" role="alert">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
     {% comment %} Display thumbnail if available {% endcomment %}
     {% if class_obj.image_url %}
       <img src="{{ class_obj.image_url }}" alt="{{ class_obj.title }}" class="img-fluid mb-3" style="max-height: 300px; object-fit: cover;">
