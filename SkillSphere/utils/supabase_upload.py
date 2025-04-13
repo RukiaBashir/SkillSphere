@@ -26,21 +26,24 @@ def upload_to_supabase(file, folder='uploads', filename=None, content_type='appl
             {"content-type": content_type}
         )
 
-        # Check if upload_response has a 'data' attribute (successful upload)
-        if not upload_response or not getattr(upload_response, "data", None):
-            raise Exception("Upload failed: No data returned from Supabase.")
+        # If there's an error property, check it
+        if hasattr(upload_response, 'error') and upload_response.error:
+            raise Exception(f"Upload failed: {upload_response.error.message}")
+
+        # Upload_response is None if success in latest supabase-py
+        if upload_response is not None:
+            raise Exception("Upload failed: Unexpected response from Supabase.")
 
         # Get public URL
         public_url_response = supabase.storage.from_("media").get_public_url(file_path)
 
-        # Access public URL (depending on Supabase client version)
-        try:
-            public_url = public_url_response.publicURL
-        except AttributeError:
-            public_url = public_url_response.get('publicURL')
+        # Access public URL
+        public_url = getattr(public_url_response, 'publicURL', None)
+
+        if not public_url:
+            raise Exception("Failed to retrieve public URL from Supabase.")
 
         return public_url
 
     except Exception as e:
-        # Raise exception with upload error message
         raise Exception(f"Upload to Supabase failed: {e}")
