@@ -144,14 +144,40 @@ def class_update(request, pk):
     if request.method == 'POST':
         form = ClassForm(request.POST, request.FILES, instance=class_obj)
         if form.is_valid():
-            form.save()
+            updated_class = form.save(commit=False)
+            image_file = request.FILES.get('local_image')
+            if image_file:
+                # Save the file locally first so that the model field is updated.
+                updated_class.local_image = image_file
+                updated_class.save()
+
+                try:
+                    # Get the content type of the uploaded file
+                    content_type = image_file.content_type
+
+                    # Upload the image to Supabase. The file will be read as bytes by the upload function.
+                    public_url = upload_to_supabase(
+                        image_file,
+                        folder='class_thumbnails',
+                        filename=image_file.name,
+                        content_type=content_type
+                    )
+
+                    # Set the external image URL on the model and optionally clear the local image field
+                    updated_class.external_image_url = public_url
+                    updated_class.local_image = None  # Remove local image reference if using the external URL
+                    updated_class.save()
+
+                except Exception as e:
+                    messages.error(request, f"Image upload to Supabase failed: {e}")
+            else:
+                updated_class.save()
             messages.success(request, "Class updated successfully.")
-            return redirect('classes:class-detail', pk=class_obj.pk)
+            return redirect('classes:class-detail', pk=updated_class.pk)
     else:
         form = ClassForm(instance=class_obj)
 
     return render(request, 'classes/class_update.html', {'form': form, 'class_obj': class_obj})
-
 
 # Instructor dashboard to manage classes
 

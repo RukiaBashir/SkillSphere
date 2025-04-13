@@ -49,9 +49,21 @@ def register(request):
                 # Upload profile image to Supabase
                 profile_image_file = request.FILES.get('profile_image')
                 if profile_image_file:
-                    uploaded_url = upload_to_supabase(profile_image_file, folder='profile_images')
-                    user.external_image_url = uploaded_url
-                    user.local_image = None  # clear local if using external
+                    try:
+                        # Upload the image file to Supabase using the defined helper function.
+                        # The helper should accept the file, a folder name, the filename, and the content type.
+                        uploaded_url = upload_to_supabase(
+                            profile_image_file,
+                            folder='profile_images',
+                            filename=profile_image_file.name,
+                            content_type=profile_image_file.content_type
+                        )
+                        # Update the user's external image URL with the returned public URL.
+                        user.external_image_url = uploaded_url
+                        # Optionally, clear the local image field.
+                        user.local_image = None
+                    except Exception as e:
+                        messages.error(request, f"Profile image upload failed: {e}")
                 user.is_active = False  # Inactive until OTP verification
                 user.save()
 
