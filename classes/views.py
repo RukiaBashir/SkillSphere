@@ -144,11 +144,9 @@ def class_update(request, pk):
         form = ClassForm(request.POST, request.FILES, instance=class_obj)
         if form.is_valid():
             updated_class = form.save(commit=False)
-
             image_file = request.FILES.get('local_image')
             if image_file:
                 try:
-                    # Upload image to Supabase
                     content_type = image_file.content_type
                     public_url = upload_to_supabase(
                         image_file,
@@ -156,18 +154,14 @@ def class_update(request, pk):
                         filename=image_file.name,
                         content_type=content_type
                     )
-                    # Set external image URL and optionally clear local image field
                     updated_class.external_image_url = public_url
-                    updated_class.local_image = None
+                    updated_class.local_image = None  # Remove local image
+                    messages.success(request, "Image uploaded successfully.")
 
                 except Exception as e:
                     messages.error(request, f"Image upload to Supabase failed: {e}")
-                    # fallback to keeping local image in DB if upload fails
-                    updated_class.local_image = image_file
 
-            # Save class object after handling image
             updated_class.save()
-
             messages.success(request, "Class updated successfully.")
             return redirect('classes:class-detail', pk=updated_class.pk)
     else:
