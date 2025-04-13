@@ -96,26 +96,22 @@ def class_create(request):
 
             # Handle file upload and synchronization with Supabase
             image_file = request.FILES.get('local_image')
+            image_file = request.FILES.get('local_image')
             if image_file:
+                # First, assign the image locally (if needed)
                 new_class.local_image = image_file
-                new_class.save()  # Save the object first so that file is available locally.
+                new_class.save()
+
                 try:
-                    # Get the full local path if needed (works for FileSystemStorage)
-                    local_image_path = new_class.local_image.path
-                    # Read the file in binary mode.
-                    with open(local_image_path, 'rb') as f:
-                        public_url = upload_to_supabase(
-                            f,
-                            folder='class_thumbnails',
-                            filename=image_file.name,
-                            content_type=image_file.content_type
-                        )
+                    content_type = image_file.content_type
+                    public_url = upload_to_supabase(image_file, folder='class_thumbnails', filename=image_file.name,
+                                                    content_type=content_type)
                     new_class.external_image_url = public_url
-                    new_class.local_image = None  # Optionally remove the local image reference.
+                    new_class.local_image = None  # Optionally clear the local image field if using the external URL
                     new_class.save()
                 except Exception as e:
                     messages.error(request, f"Image upload to Supabase failed: {e}")
-                    # Still proceed with local image as fallback
+                    # Optionally, keep the local image as a fallback
             else:
                 new_class.save()
 

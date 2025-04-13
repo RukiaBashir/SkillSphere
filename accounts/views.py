@@ -49,7 +49,7 @@ def register(request):
                 # Upload profile image to Supabase
                 profile_image_file = request.FILES.get('profile_image')
                 if profile_image_file:
-                    uploaded_url = upload_to_supabase_s3(profile_image_file, folder='profile_images')
+                    uploaded_url = upload_to_supabase(profile_image_file, folder='profile_images')
                     user.external_image_url = uploaded_url
                     user.local_image = None  # clear local if using external
                 user.is_active = False  # Inactive until OTP verification

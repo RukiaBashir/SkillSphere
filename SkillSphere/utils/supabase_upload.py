@@ -2,33 +2,40 @@ import uuid
 from supabase import create_client
 from django.conf import settings
 
+# Create a global supabase client using the service role key (only for server-side use)
+supabase = create_client(
+    settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY
+)
+
 
 def upload_to_supabase(file, folder='uploads', filename=None, content_type='application/octet-stream'):
     """
-    Uploads a file to Supabase Storage and returns its public URL.
+    Uploads a file to Supabase Storage and returns the public URL.
 
-    :param file: A Django UploadedFile object or a file-like object.
-    :param folder: The folder in the Supabase bucket where the file will be stored.
-    :param filename: Optionally override the original filename.
-    :param content_type: MIME type of the file.
+    :param file: A Django UploadedFile object.
+    :param folder: Sub-folder in the bucket, e.g., 'class_thumbnails' or 'profile_images'
+    :param filename: An optional filename override; if not provided, use file.name.
+    :param content_type: The content type of the file.
     :return: The public URL of the uploaded file.
+    :raises Exception: If the upload fails.
     """
-    # Create a Supabase client using the service role key
-    supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
-
-    # Use the provided filename or generate a unique filename based on the file name and a UUID.
+    # Use provided filename or the file's original name, then extract the extension
     extension = (filename or file.name).split('.')[-1]
     unique_filename = f"{uuid.uuid4()}.{extension}"
     file_path = f"{folder}/{unique_filename}"
 
-    # Upload the file. Note: the file must be a file-like object in binary mode.
-    response = supabase.storage.from_(settings.SUPABASE_BUCKET).upload(file_path, file, {
-        "content-type": content_type
-    })
+    # Attempt the upload
+    upload_response = supabase.storage.from_("media").upload(
+        file_path, file, {"content-type": content_type}
+    )
 
-    if response.get("error"):
-        raise Exception(response["error"]["message"])
+    # Check the response for errors.
+    if upload_response.error:
+        raise Exception(f"Upload failed: {upload_response.error.message}")
 
-    # Get the public URL from Supabase Storage.
-    public_url = supabase.storage.from_(settings.SUPABASE_BUCKET).get_public_url(file_path)
+    # Retrieve the public URL; the response might be an object with 'publicURL' attribute
+    public_url_response = supabase.storage.from_("media").get_public_url(file_path)
+    # Depending on your version of the library, check how to access the public URL.
+    # For example, if the returned object has a 'publicURL' property:
+    public_url = public_url_response.publicURL
     return public_url
