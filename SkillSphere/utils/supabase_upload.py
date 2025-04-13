@@ -1,35 +1,34 @@
-import boto3
-from django.conf import settings
 import uuid
+from supabase import create_client
+from django.conf import settings
 
 
-def upload_to_supabase_s3(file, folder='uploads', filename=None, content_type='application/octet-stream'):
+def upload_to_supabase(file, folder='uploads', filename=None, content_type='application/octet-stream'):
     """
-    Upload a file to Supabase Storage via S3-compatible endpoint and return public URL.
+    Uploads a file to Supabase Storage and returns its public URL.
+
+    :param file: A Django UploadedFile object or a file-like object.
+    :param folder: The folder in the Supabase bucket where the file will be stored.
+    :param filename: Optionally override the original filename.
+    :param content_type: MIME type of the file.
+    :return: The public URL of the uploaded file.
     """
-    # Use provided filename or generate a unique one
+    # Create a Supabase client using the service role key
+    supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
+
+    # Use the provided filename or generate a unique filename based on the file name and a UUID.
     extension = (filename or file.name).split('.')[-1]
     unique_filename = f"{uuid.uuid4()}.{extension}"
     file_path = f"{folder}/{unique_filename}"
 
-    # Initialize boto3 client with Supabase S3 credentials
-    s3_client = boto3.client(
-        's3',
-        endpoint_url=settings.SUPABASE_S3_ENDPOINT,  # your S3 connection endpoint
-        aws_access_key_id=settings.SUPABASE_S3_ACCESS_KEY,
-        aws_secret_access_key=settings.SUPABASE_S3_SECRET_KEY,
-        region_name='us-east-1',  # Supabase S3-compatible defaults to this — unless yours is customized
-    )
+    # Upload the file. Note: the file must be a file-like object in binary mode.
+    response = supabase.storage.from_(settings.SUPABASE_BUCKET).upload(file_path, file, {
+        "content-type": content_type
+    })
 
-    # Upload file object (file should be a file-like object opened in 'rb' mode)
-    s3_client.put_object(
-        Bucket='media',  # your Supabase storage bucket name
-        Key=file_path,
-        Body=file,
-        ContentType=content_type,
-        ACL='public-read'  # or adjust if bucket is public
-    )
+    if response.get("error"):
+        raise Exception(response["error"]["message"])
 
-    # Construct public URL
-    public_url = f"{settings.SUPABASE_S3_ENDPOINT}/media/{file_path}"
+    # Get the public URL from Supabase Storage.
+    public_url = supabase.storage.from_(settings.SUPABASE_BUCKET).get_public_url(file_path)
     return public_url

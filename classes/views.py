@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import DeleteView, UpdateView
 
-from SkillSphere.utils.supabase_upload import upload_to_supabase_s3
+from SkillSphere.utils.supabase_upload import upload_to_supabase
 from payments.models import CartItem
 from .forms import ClassForm, SkillCategoryForm
 from .models import Class, SkillCategory, Enrollment
@@ -94,27 +94,25 @@ def class_create(request):
             new_class.instructor = request.user  # Auto-assign current user as instructor
             image_file = request.FILES.get('local_image')
 
+            # Handle file upload and synchronization with Supabase
             image_file = request.FILES.get('local_image')
             if image_file:
                 new_class.local_image = image_file
-                new_class.save()
-
+                new_class.save()  # Save the object first so that file is available locally.
                 try:
+                    # Get the full local path if needed (works for FileSystemStorage)
                     local_image_path = new_class.local_image.path
-                    content_type = image_file.content_type
-
+                    # Read the file in binary mode.
                     with open(local_image_path, 'rb') as f:
-                        public_url = upload_to_supabase_s3(
+                        public_url = upload_to_supabase(
                             f,
                             folder='class_thumbnails',
                             filename=image_file.name,
-                            content_type=content_type
+                            content_type=image_file.content_type
                         )
-
                     new_class.external_image_url = public_url
-                    new_class.local_image = None  # Optionally remove local image
+                    new_class.local_image = None  # Optionally remove the local image reference.
                     new_class.save()
-
                 except Exception as e:
                     messages.error(request, f"Image upload to Supabase failed: {e}")
                     # Still proceed with local image as fallback
