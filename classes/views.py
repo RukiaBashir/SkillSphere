@@ -63,7 +63,25 @@ def class_detail(request, pk):
 
 
 # Create a new class (for instructors only)
+def image_upload_preview(request):
+    public_url = None
 
+    if request.method == 'POST':
+        image_file = request.FILES.get('image')
+        if image_file:
+            try:
+                content_type = image_file.content_type
+                public_url = upload_to_supabase(
+                    image_file,
+                    folder='test_uploads',
+                    filename=image_file.name,
+                    content_type=content_type
+                )
+                messages.success(request, "Image uploaded successfully.")
+            except Exception as e:
+                messages.error(request, f"Upload failed: {e}")
+
+    return render(request, 'classes/image_upload_preview.html', {'public_url': public_url})
 
 @login_required
 def class_create(request):

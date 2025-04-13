@@ -26,18 +26,21 @@ def upload_to_supabase(file, folder='uploads', filename=None, content_type='appl
             {"content-type": content_type}
         )
 
-        # If upload_response has an error attribute and it's not None, raise it
+        # Check for an error in the response
         if hasattr(upload_response, 'error') and upload_response.error:
             raise Exception(f"Upload failed: {upload_response.error.message}")
 
-        # Otherwise, assume upload succeeded — no need to check for None or unexpected response now
-
         # Get public URL
         public_url_response = supabase.storage.from_("media").get_public_url(file_path)
-        public_url = getattr(public_url_response, 'publicURL', None)
 
-        if not public_url:
-            raise Exception("Failed to retrieve public URL from Supabase.")
+        # Safely extract the public URL
+        if hasattr(public_url_response, 'publicURL') and public_url_response.publicURL:
+            public_url = public_url_response.publicURL
+        elif isinstance(public_url_response, dict) and 'publicURL' in public_url_response:
+            public_url = public_url_response['publicURL']
+        else:
+            # Construct it manually if response didn't give it
+            public_url = f"{settings.SUPABASE_URL}/storage/v1/object/public/media/{file_path}"
 
         return public_url
 

@@ -15,6 +15,7 @@ urlpatterns = [
 
     # Update an existing class (for instructors)
     path('class/<int:pk>/update/', views.class_update, name='class-update'),
+    path('upload-preview/', views.image_upload_preview, name='image-upload-preview'),
 
     # Delete a class (for instructors)
     path('class/<int:pk>/delete/', ClassDeleteView.as_view(), name='class-delete'),
