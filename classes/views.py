@@ -96,7 +96,6 @@ def class_create(request):
 
             # Handle file upload and synchronization with Supabase
             image_file = request.FILES.get('local_image')
-            image_file = request.FILES.get('local_image')
             if image_file:
                 # First, assign the image locally (if needed)
                 new_class.local_image = image_file
@@ -147,27 +146,23 @@ def class_update(request, pk):
             updated_class = form.save(commit=False)
             image_file = request.FILES.get('local_image')
             if image_file:
-                # Save the file locally first so that the model field is updated.
+                # Save the file locally first, if needed
                 updated_class.local_image = image_file
                 updated_class.save()
 
                 try:
-                    # Get the content type of the uploaded file
                     content_type = image_file.content_type
-
-                    # Upload the image to Supabase. The file will be read as bytes by the upload function.
+                    # Upload image to Supabase
                     public_url = upload_to_supabase(
                         image_file,
                         folder='class_thumbnails',
                         filename=image_file.name,
                         content_type=content_type
                     )
-
-                    # Set the external image URL on the model and optionally clear the local image field
+                    # Update the class with the external image URL and clear the local image field
                     updated_class.external_image_url = public_url
-                    updated_class.local_image = None  # Remove local image reference if using the external URL
+                    updated_class.local_image = None
                     updated_class.save()
-
                 except Exception as e:
                     messages.error(request, f"Image upload to Supabase failed: {e}")
             else:
