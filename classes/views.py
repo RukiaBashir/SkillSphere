@@ -120,7 +120,7 @@ def class_create(request):
     else:
         form = ClassForm()
 
-    return render(request, 'classes/class_create.html', {'form': form})
+    return render(request, 'class_create.html', {'form': form})
 
 
 class ClassDeleteView(LoginRequiredMixin, DeleteView):
