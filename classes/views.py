@@ -146,23 +146,21 @@ def class_update(request, pk):
             updated_class = form.save(commit=False)
             image_file = request.FILES.get('local_image')
             if image_file:
-                # Save the image locally first if necessary (so that your model has the file)
                 updated_class.local_image = image_file
                 updated_class.save()
 
                 try:
                     content_type = image_file.content_type
-                    # Upload image to Supabase and retrieve the public URL
                     public_url = upload_to_supabase(
                         image_file,
                         folder='class_thumbnails',
                         filename=image_file.name,
                         content_type=content_type
                     )
-                    # Update the class with the external image URL and clear the local image field if desired
                     updated_class.external_image_url = public_url
                     updated_class.local_image = None
                     updated_class.save()
+
                 except Exception as e:
                     messages.error(request, f"Image upload to Supabase failed: {e}")
 
