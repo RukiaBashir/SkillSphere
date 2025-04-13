@@ -146,23 +146,24 @@ def class_update(request, pk):
         if form.is_valid():
             updated_class = form.save(commit=False)
 
+            # Check if clear image was requested
+            if 'clear_image' in request.POST:
+                updated_class.local_image.delete(save=False)
+                updated_class.external_image_url = None
+
+            # Handle new image upload to Supabase
             image_file = request.FILES.get('local_image')
             if image_file:
-                try:
-                    content_type = image_file.content_type
-                    public_url = upload_to_supabase(
-                        image_file,
-                        folder='class_thumbnails',
-                        filename=image_file.name,
-                        content_type=content_type
-                    )
-                    updated_class.external_image_url = public_url
-                    updated_class.local_image = None
-                    messages.success(request, "Image uploaded successfully.")
-                except Exception as e:
-                    messages.error(request, f"Image upload to Supabase failed: {e}")
-            else:
-                messages.info(request, "No new image uploaded.")
+                content_type = image_file.content_type
+                public_url = upload_to_supabase(
+                    image_file,
+                    folder='class_thumbnails',
+                    filename=image_file.name,
+                    content_type=content_type
+                )
+                updated_class.external_image_url = public_url
+                updated_class.local_image = None
+                messages.success(request, "Image uploaded successfully.")
 
             updated_class.save()
             messages.success(request, "Class updated successfully.")

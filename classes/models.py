@@ -30,8 +30,8 @@ class Class(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     price = models.DecimalField(max_digits=8, decimal_places=2)
-    local_image = models.ImageField(upload_to='classes/', blank=True, null=True)  # Local uploads
-    external_image_url = models.URLField(blank=True, null=True)  # Supabase or CDN
+    local_image = models.ImageField(upload_to='class_thumbnails/', blank=True, null=True)
+    external_image_url = models.URLField(blank=True, null=True)
     schedule = models.DateTimeField()
     venue_address = models.CharField(max_length=255, blank=True, null=True)
     instructor = models.ForeignKey(SkillUser, on_delete=models.CASCADE, limit_choices_to={'role': 'instructor'})
@@ -56,11 +56,12 @@ class Class(models.Model):
 
     @property
     def get_image_url(self):
+        """Return either external image URL (from Supabase) or local media image URL."""
         if self.external_image_url:
             return self.external_image_url
         elif self.local_image:
             return self.local_image.url
-        return self.local_image.url
+        return None
 
 
 class Enrollment(models.Model):
