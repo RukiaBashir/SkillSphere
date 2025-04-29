@@ -50,20 +50,28 @@ def register(request):
                 profile_image_file = request.FILES.get('profile_image')
                 if profile_image_file:
                     try:
+                        # Get content type and filename
                         content_type = profile_image_file.content_type
+                        filename = profile_image_file.name
+                        # Upload to Supabase — now dynamically using your SUPABASE_BUCKET setting
                         uploaded_url = upload_to_supabase(
                             profile_image_file,
                             folder='profile_images',
-                            filename=profile_image_file.name,
+                            filename=filename,
                             content_type=content_type
                         )
+                        # Save the external image URL to the user profile
                         user.external_image_url = uploaded_url
-                        user.local_image = None  # Clear local if using external
+                        user.local_image = None  # Clear local image field if switching to external
+                        request.FILES.pop('profile_image')  # Prevent stream issue
                         user.save()
                         messages.success(request, "Profile image uploaded successfully.")
-
                     except Exception as e:
                         messages.error(request, f"Profile image upload to Supabase failed: {e}")
+
+                else:
+                    messages.info(request, "No profile image uploaded.")
+
                 user.is_active = False  # Inactive until OTP verification
                 user.save()
 
